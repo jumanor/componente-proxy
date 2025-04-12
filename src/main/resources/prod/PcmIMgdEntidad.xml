@@ -1,0 +1,86 @@
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://ws.wsentidad.segdi.gob.pe/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:ns1="http://schemas.xmlsoap.org/soap/http" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" targetNamespace="http://ws.wsentidad.segdi.gob.pe/">
+   <wsdl:types>
+      <xsd:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="http://ws.wsentidad.segdi.gob.pe/" version="1.0">
+         <xsd:element name="getListaEntidad" type="tns:getListaEntidad"/>
+         <xsd:element name="getListaEntidadResponse" type="tns:getListaEntidadResponse"/>
+         <xsd:element name="validarEntidad" type="tns:validarEntidad"/>
+         <xsd:element name="validarEntidadResponse" type="tns:validarEntidadResponse"/>
+         <xsd:complexType name="getListaEntidad">
+            <xsd:sequence>
+               <xsd:element name="sidcatent" type="xsd:int"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="getListaEntidadResponse">
+            <xsd:sequence>
+               <xsd:element maxOccurs="unbounded" minOccurs="0" name="return" type="tns:EntidadBean"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="EntidadBean">
+            <xsd:sequence>
+               <xsd:element name="sident" type="xsd:int"/>
+               <xsd:element name="sidpadent" type="xsd:int"/>
+               <xsd:element minOccurs="0" name="vnoment" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="vrucent" type="xsd:string"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="validarEntidad">
+            <xsd:sequence>
+               <xsd:element name="vrucent" type="xsd:string"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="validarEntidadResponse">
+            <xsd:sequence>
+               <xsd:element minOccurs="0" name="return" type="xsd:string"/>
+            </xsd:sequence>
+         </xsd:complexType>
+      </xsd:schema>
+   </wsdl:types>
+   <wsdl:message name="getListaEntidad">
+      <wsdl:part name="parameters" element="tns:getListaEntidad"/>
+   </wsdl:message>
+   <wsdl:message name="getListaEntidadResponse">
+      <wsdl:part name="parameters" element="tns:getListaEntidadResponse"/>
+   </wsdl:message>
+   <wsdl:message name="validarEntidad">
+      <wsdl:part name="parameters" element="tns:validarEntidad"/>
+   </wsdl:message>
+   <wsdl:message name="validarEntidadResponse">
+      <wsdl:part name="parameters" element="tns:validarEntidadResponse"/>
+   </wsdl:message>
+   <wsdl:portType name="PcmIMgdEntidadPortType">
+      <wsdl:operation name="getListaEntidad">
+         <wsdl:input message="tns:getListaEntidad" wsaw:Action="getListaEntidad"/>
+         <wsdl:output message="tns:getListaEntidadResponse" wsaw:Action="http://ws.wsentidad.segdi.gob.pe/Entidad/getListaEntidadResponse"/>
+      </wsdl:operation>
+      <wsdl:operation name="validarEntidad">
+         <wsdl:input message="tns:validarEntidad" wsaw:Action="validarEntidad"/>
+         <wsdl:output message="tns:validarEntidadResponse" wsaw:Action="http://ws.wsentidad.segdi.gob.pe/Entidad/validarEntidadResponse"/>
+      </wsdl:operation>
+   </wsdl:portType>
+   <wsdl:binding name="PcmIMgdEntidadSoap11Binding" type="tns:PcmIMgdEntidadPortType">
+      <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+      <wsdl:operation name="getListaEntidad">
+         <soap:operation soapAction="getListaEntidad" style="document"/>
+         <wsdl:input>
+            <soap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal"/>
+         </wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="validarEntidad">
+         <soap:operation soapAction="validarEntidad" style="document"/>
+         <wsdl:input>
+            <soap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal"/>
+         </wsdl:output>
+      </wsdl:operation>
+   </wsdl:binding>
+   <wsdl:service name="PcmIMgdEntidad">
+      <wsdl:port name="PcmIMgdEntidadHttpsSoap11Endpoint" binding="tns:PcmIMgdEntidadSoap11Binding">
+         <soap:address location="https://ws2.pide.gob.pe/services/PcmIMgdEntidad.PcmIMgdEntidadHttpsSoap11Endpoint"/>
+      </wsdl:port>
+   </wsdl:service>
+</wsdl:definitions>

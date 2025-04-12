@@ -1,0 +1,225 @@
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://ws.wsiopidetramite.segdi.gob.pe/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:ns1="http://schemas.xmlsoap.org/soap/http" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" targetNamespace="http://ws.wsiopidetramite.segdi.gob.pe/">
+   <wsdl:types>
+      <xsd:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="http://ws.wsiopidetramite.segdi.gob.pe/" version="1.0">
+         <xsd:element name="cargoResponse" type="tns:cargoResponse"/>
+         <xsd:element name="cargoResponseResponse" type="tns:cargoResponseResponse"/>
+         <xsd:element name="consultarTramiteResponse" type="tns:consultarTramiteResponse"/>
+         <xsd:element name="consultarTramiteResponseResponse" type="tns:consultarTramiteResponseResponse"/>
+         <xsd:element name="getTipoDocumento" type="tns:getTipoDocumento"/>
+         <xsd:element name="getTipoDocumentoResponse" type="tns:getTipoDocumentoResponse"/>
+         <xsd:element name="recepcionarTramiteResponse" type="tns:recepcionarTramiteResponse"/>
+         <xsd:element name="recepcionarTramiteResponseResponse" type="tns:recepcionarTramiteResponseResponse"/>
+         <xsd:complexType name="cargoResponse">
+            <xsd:sequence>
+               <xsd:element name="request" type="tns:CargoTramite"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="CargoTramite">
+            <xsd:sequence>
+               <xsd:element name="vrucentrem" type="xsd:string"/>
+               <xsd:element name="vrucentrec" type="xsd:string"/>
+               <xsd:element name="vcuo" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="vcuoref" type="xsd:string"/>
+               <xsd:element name="vnumregstd" type="xsd:string"/>
+               <xsd:element name="vanioregstd" type="xsd:string"/>
+               <xsd:element name="dfecregstd" type="xsd:dateTime"/>
+               <xsd:element name="vuniorgstd" type="xsd:string"/>
+               <xsd:element name="vusuregstd" type="xsd:string"/>
+               <xsd:element name="bcarstd" type="xsd:base64Binary"/>
+               <xsd:element minOccurs="0" name="vobs" type="xsd:string"/>
+               <xsd:element name="cflgest" type="xsd:string"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="cargoResponseResponse">
+            <xsd:sequence>
+               <xsd:element minOccurs="0" name="return" type="tns:RespuestaCargoTramite"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="RespuestaCargoTramite">
+            <xsd:sequence>
+               <xsd:element minOccurs="0" name="vcodres" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="vdesres" type="xsd:string"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="consultarTramiteResponse">
+            <xsd:sequence>
+               <xsd:element name="request" type="tns:ConsultaTramite"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="ConsultaTramite">
+            <xsd:sequence>
+               <xsd:element minOccurs="0" name="vrucentrem" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="vrucentrec" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="vcuo" type="xsd:string"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="consultarTramiteResponseResponse">
+            <xsd:sequence>
+               <xsd:element minOccurs="0" name="return" type="tns:RespuestaConsultaTramite"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="RespuestaConsultaTramite">
+            <xsd:sequence>
+               <xsd:element minOccurs="0" name="vcodres" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="vdesres" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="vcuo" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="vcuoref" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="vnumregstd" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="vanioregstd" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="vuniorgstd" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="dfecregstd" type="xsd:dateTime"/>
+               <xsd:element minOccurs="0" name="vusuregstd" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="bcarstd" type="xsd:base64Binary"/>
+               <xsd:element minOccurs="0" name="vobs" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="cflgest" type="xsd:string"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="getTipoDocumento">
+            <xsd:sequence/>
+         </xsd:complexType>
+         <xsd:complexType name="getTipoDocumentoResponse">
+            <xsd:sequence>
+               <xsd:element maxOccurs="unbounded" minOccurs="0" name="return" type="tns:ioTipoDocumentoTramite"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="ioTipoDocumentoTramite">
+            <xsd:sequence>
+               <xsd:element minOccurs="0" name="ccodtipdoctra" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="vnomtipdoctra" type="xsd:string"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="recepcionarTramiteResponse">
+            <xsd:sequence>
+               <xsd:element name="request" type="tns:RecepcionTramite"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="RecepcionTramite">
+            <xsd:sequence>
+               <xsd:element name="vrucentrem" type="xsd:string"/>
+               <xsd:element name="vrucentrec" type="xsd:string"/>
+               <xsd:element name="vnomentemi" type="xsd:string"/>
+               <xsd:element name="vuniorgrem" type="xsd:string"/>
+               <xsd:element name="vcuo" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="vcuoref" type="xsd:string"/>
+               <xsd:element name="ccodtipdoc" type="xsd:string"/>
+               <xsd:element name="vnumdoc" type="xsd:string"/>
+               <xsd:element name="dfecdoc" type="xsd:dateTime"/>
+               <xsd:element name="vuniorgdst" type="xsd:string"/>
+               <xsd:element name="vnomdst" type="xsd:string"/>
+               <xsd:element name="vnomcardst" type="xsd:string"/>
+               <xsd:element name="vasu" type="xsd:string"/>
+               <xsd:element name="snumanx" type="xsd:int"/>
+               <xsd:element name="snumfol" type="xsd:int"/>
+               <xsd:element name="bpdfdoc" type="xsd:base64Binary"/>
+               <xsd:element name="vnomdoc" type="xsd:string"/>
+               <xsd:element maxOccurs="unbounded" minOccurs="0" name="lstanexos" nillable="true" type="tns:DocumentoAnexo"/>
+               <xsd:element minOccurs="0" name="vurldocanx" type="xsd:string"/>
+               <xsd:element name="ctipdociderem" type="xsd:string"/>
+               <xsd:element name="vnumdociderem" type="xsd:string"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="DocumentoAnexo">
+            <xsd:sequence>
+               <xsd:element minOccurs="0" name="vnomdoc" type="xsd:string"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="recepcionarTramiteResponseResponse">
+            <xsd:sequence>
+               <xsd:element minOccurs="0" name="return" type="tns:RespuestaTramite"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:complexType name="RespuestaTramite">
+            <xsd:sequence>
+               <xsd:element minOccurs="0" name="vcodres" type="xsd:string"/>
+               <xsd:element minOccurs="0" name="vdesres" type="xsd:string"/>
+            </xsd:sequence>
+         </xsd:complexType>
+      </xsd:schema>
+   </wsdl:types>
+   <wsdl:message name="cargoResponse">
+      <wsdl:part name="parameters" element="tns:cargoResponse"/>
+   </wsdl:message>
+   <wsdl:message name="cargoResponseResponse">
+      <wsdl:part name="parameters" element="tns:cargoResponseResponse"/>
+   </wsdl:message>
+   <wsdl:message name="consultarTramiteResponse">
+      <wsdl:part name="parameters" element="tns:consultarTramiteResponse"/>
+   </wsdl:message>
+   <wsdl:message name="consultarTramiteResponseResponse">
+      <wsdl:part name="parameters" element="tns:consultarTramiteResponseResponse"/>
+   </wsdl:message>
+   <wsdl:message name="getTipoDocumento">
+      <wsdl:part name="parameters" element="tns:getTipoDocumento"/>
+   </wsdl:message>
+   <wsdl:message name="getTipoDocumentoResponse">
+      <wsdl:part name="parameters" element="tns:getTipoDocumentoResponse"/>
+   </wsdl:message>
+   <wsdl:message name="recepcionarTramiteResponse">
+      <wsdl:part name="parameters" element="tns:recepcionarTramiteResponse"/>
+   </wsdl:message>
+   <wsdl:message name="recepcionarTramiteResponseResponse">
+      <wsdl:part name="parameters" element="tns:recepcionarTramiteResponseResponse"/>
+   </wsdl:message>
+   <wsdl:portType name="PcmIMgdTramitePortType">
+      <wsdl:operation name="cargoResponse">
+         <wsdl:input message="tns:cargoResponse" wsaw:Action="cargoResponse"/>
+         <wsdl:output message="tns:cargoResponseResponse" wsaw:Action="http://ws.wsiopidetramite.segdi.gob.pe/IOTramite/cargoResponseResponse"/>
+      </wsdl:operation>
+      <wsdl:operation name="consultarTramiteResponse">
+         <wsdl:input message="tns:consultarTramiteResponse" wsaw:Action="consultarTramiteResponse"/>
+         <wsdl:output message="tns:consultarTramiteResponseResponse" wsaw:Action="http://ws.wsiopidetramite.segdi.gob.pe/IOTramite/consultarTramiteResponseResponse"/>
+      </wsdl:operation>
+      <wsdl:operation name="getTipoDocumento">
+         <wsdl:input message="tns:getTipoDocumento" wsaw:Action="getTipoDocumento"/>
+         <wsdl:output message="tns:getTipoDocumentoResponse" wsaw:Action="http://ws.wsiopidetramite.segdi.gob.pe/IOTramite/getTipoDocumentoResponse"/>
+      </wsdl:operation>
+      <wsdl:operation name="recepcionarTramiteResponse">
+         <wsdl:input message="tns:recepcionarTramiteResponse" wsaw:Action="recepcionarTramiteResponse"/>
+         <wsdl:output message="tns:recepcionarTramiteResponseResponse" wsaw:Action="http://ws.wsiopidetramite.segdi.gob.pe/IOTramite/recepcionarTramiteResponseResponse"/>
+      </wsdl:operation>
+   </wsdl:portType>
+   <wsdl:binding name="PcmIMgdTramiteSoap11Binding" type="tns:PcmIMgdTramitePortType">
+      <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+      <wsdl:operation name="cargoResponse">
+         <soap:operation soapAction="cargoResponse" style="document"/>
+         <wsdl:input>
+            <soap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal"/>
+         </wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="consultarTramiteResponse">
+         <soap:operation soapAction="consultarTramiteResponse" style="document"/>
+         <wsdl:input>
+            <soap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal"/>
+         </wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="getTipoDocumento">
+         <soap:operation soapAction="getTipoDocumento" style="document"/>
+         <wsdl:input>
+            <soap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal"/>
+         </wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="recepcionarTramiteResponse">
+         <soap:operation soapAction="recepcionarTramiteResponse" style="document"/>
+         <wsdl:input>
+            <soap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal"/>
+         </wsdl:output>
+      </wsdl:operation>
+   </wsdl:binding>
+   <wsdl:service name="PcmIMgdTramite">
+      <wsdl:port name="PcmIMgdTramiteHttpsSoap11Endpoint" binding="tns:PcmIMgdTramiteSoap11Binding">
+         <soap:address location="https://ws2.pide.gob.pe/services/PcmIMgdTramite.PcmIMgdTramiteHttpsSoap11Endpoint"/>
+      </wsdl:port>
+   </wsdl:service>
+</wsdl:definitions>

@@ -1,0 +1,7 @@
+http://127.0.0.1:8080/componente-proxy/rest/api/ping
+
+wsimport -keep -p local3.pe.gob.segdi.wsiotramite.ws -verbose Tramite.xml
+
+wsimport -keep -p local3.pe.gob.segdi.wsiotramite.ws -verbose http://127.0.0.1:8080/wsiotramite/Tramite?wsdl
+
+wsimport -keep -p local3.pe.gob.segdi.wsiotramite.ws -verbose -s java http://127.0.0.1:8080/wsiotramite/Tramite?wsdl 

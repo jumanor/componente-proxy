@@ -1,0 +1,88 @@
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://pcm.pide.gob.pe/webservice" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" targetNamespace="http://pcm.pide.gob.pe/webservice">
+   <wsdl:types>
+      <xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="http://pcm.pide.gob.pe/webservice">
+         <xsd:import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
+         <xsd:import namespace="http://schemas.xmlsoap.org/wsdl/"/>
+         <xsd:element name="getCUOEntidad">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element form="unqualified" name="ruc" nillable="true" type="xsd:string"/>
+                  <xsd:element form="unqualified" name="servicio" nillable="true" type="xsd:string"/>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element name="getCUO">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element form="unqualified" name="ruc" nillable="true" type="xsd:string"/>
+                  <xsd:element form="unqualified" name="servicio" nillable="true" type="xsd:string"/>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element name="getCUOEntidadResponse">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element form="unqualified" name="return" nillable="true" type="xsd:string"/>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element name="getCUOResponse">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element form="unqualified" name="return" nillable="true" type="xsd:string"/>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+      </xsd:schema>
+   </wsdl:types>
+   <wsdl:message name="getCUOEntidadRequest">
+      <wsdl:part name="parameters" element="tns:getCUOEntidad"/>
+   </wsdl:message>
+   <wsdl:message name="getCUOEntidadResponse">
+      <wsdl:part name="parameters" element="tns:getCUOEntidadResponse"/>
+   </wsdl:message>
+   <wsdl:message name="getCUORequest">
+      <wsdl:part name="parameters" element="tns:getCUO"/>
+   </wsdl:message>
+   <wsdl:message name="getCUOResponse">
+      <wsdl:part name="parameters" element="tns:getCUOResponse"/>
+   </wsdl:message>
+   <wsdl:portType name="PcmCuoPortType">
+      <wsdl:operation name="getCUOEntidad">
+         <wsdl:documentation>Retorna string CUO</wsdl:documentation>
+         <wsdl:input message="tns:getCUOEntidadRequest" wsaw:Action="http://pcm.pide.gob.pe/webservice#ShowArchivos"/>
+         <wsdl:output message="tns:getCUOEntidadResponse" wsaw:Action="http://pcm.pide.gob.pe/webservice/ApplicationServicesPortType/getCUOEntidadResponse"/>
+      </wsdl:operation>
+      <wsdl:operation name="getCUO">
+         <wsdl:documentation>Retorna string CUO</wsdl:documentation>
+         <wsdl:input message="tns:getCUORequest" wsaw:Action="http://pcm.pide.gob.pe/webservice#ShowArchivo"/>
+         <wsdl:output message="tns:getCUOResponse" wsaw:Action="http://pcm.pide.gob.pe/webservice/ApplicationServicesPortType/getCUOResponse"/>
+      </wsdl:operation>
+   </wsdl:portType>
+   <wsdl:binding name="PcmCuoSoap11Binding" type="tns:PcmCuoPortType">
+      <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+      <wsdl:operation name="getCUOEntidad">
+         <soap:operation soapAction="http://pcm.pide.gob.pe/webservice#ShowArchivos" style="document"/>
+         <wsdl:input>
+            <soap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal"/>
+         </wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="getCUO">
+         <soap:operation soapAction="http://pcm.pide.gob.pe/webservice#ShowArchivo" style="document"/>
+         <wsdl:input>
+            <soap:body use="literal"/>
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal"/>
+         </wsdl:output>
+      </wsdl:operation>
+   </wsdl:binding>
+   <wsdl:service name="PcmCuo">
+      <wsdl:port name="PcmCuoHttpsSoap11Endpoint" binding="tns:PcmCuoSoap11Binding">
+         <soap:address location="https://ws2.pide.gob.pe/services/PcmCuo.PcmCuoHttpsSoap11Endpoint"/>
+      </wsdl:port>
+   </wsdl:service>
+</wsdl:definitions>
