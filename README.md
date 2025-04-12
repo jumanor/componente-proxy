@@ -14,7 +14,7 @@ Este proyecto surge por la necesidad de facilitar la Interoperabilidad entre los
 
 # Contribución
 
-Por favor contribuya usando [Github Flow](https://guides.github.com/introduction/flow/). Crea un fork, agrega los commits, y luego abre un [pull request](https://github.com/fraction/readme-boilerplate/compare/).
+Por favor contribuya usando [Github Flow](https://guides.github.com/introduction/flow/). Crea un fork, agrega los commits, y luego abre un [pull request](https://github.com/jumanor/componente-proxy/compare/).
 
 # License
 Copyright © 2025 [Jorge Cotrado](https://github.com/jumanor). <br />
