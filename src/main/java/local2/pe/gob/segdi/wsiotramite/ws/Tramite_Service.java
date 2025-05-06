@@ -1,7 +1,6 @@
 
 package local2.pe.gob.segdi.wsiotramite.ws;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
@@ -9,6 +8,7 @@ import javax.xml.ws.WebEndpoint;
 import javax.xml.ws.WebServiceClient;
 import javax.xml.ws.WebServiceException;
 import javax.xml.ws.WebServiceFeature;
+
 
 
 /**
@@ -29,11 +29,14 @@ public class Tramite_Service
     static {
         URL url = null;
         WebServiceException e = null;
+        url = Tramite_Service.class.getResource("/devlocal/Tramite.xml");
+        /*
         try {
             url = new URL("http://127.0.0.1:8080/wsiotramite/Tramite?wsdl");
         } catch (MalformedURLException ex) {
             e = new WebServiceException(ex);
         }
+        */
         TRAMITE_WSDL_LOCATION = url;
         TRAMITE_EXCEPTION = e;
     }

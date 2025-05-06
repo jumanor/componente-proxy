@@ -24,12 +24,12 @@ public class DocumentoPrincipalDao extends JdbcTemplate implements IDocumentoPri
 		sql.append(" INSERT INTO esq_iotramite.IOTDTD_DOC_PRINCIPAL(").
 		append(" SIDDOCPRI, siddocext, vnomdoc, bpdfdoc)").
 		append(" VALUES(").
-		append(" nextval('esq_iotramite.NU_INT_DOC_PRI'), ?, ?, ?) returning SIDDOCPRI");
+		append(" nextval('esq_iotramite.NU_INT_DOC_PRI'), ?, ?, ?) ");
 		
 		//jdbcTemplate = new JdbcTemplate(dataSource);
 		Integer id_column = 0;
 		
-		id_column=queryForObject(sql.toString(), Integer.class,
+		id_column=update(sql.toString(),
 				
 				documentoPrincipal.getSiddocext(),
 				documentoPrincipal.getVnomdoc(),
