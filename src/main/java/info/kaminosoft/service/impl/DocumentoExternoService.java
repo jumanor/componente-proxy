@@ -22,31 +22,27 @@ public class DocumentoExternoService implements IDocumentoExternoService {
 	@Autowired
 	IDocumentoAnexoDao iDocumentoAnexoDao;
 
+	/**
+	 * Metodo que inserta un documento externo y sus documentos anexos
+	 * <b>
+	 * En caso de error en las inserciones se lanzara una excepcion desde la capa dao
+	 * @param documentoExterno JIODocumentoExterno
+	 * @throws Exception
+	 */
 	@Override
-	public int insDocumentoExterno(JIODocumentoExterno documentoExterno) throws Exception {
-		int flagDocExt = 0;
-   		
-		int siddocext = 0;
-		siddocext = iDocumentoExternoDao.insDocumentoExterno(documentoExterno);
-    	if(siddocext != 0){
-    		documentoExterno.getDocumentoPrincipal().setSiddocext(siddocext);
-    		int flag = 0;
-    		flag = iDocumentoPrincipalDao.insDocumentoPrincipal(documentoExterno.getDocumentoPrincipal());
-    		if(flag == 1){
-    			List<JIODocumentoAnexo> lista = documentoExterno.getLstDocAnexo();
-    			if(lista != null){
-	                for (JIODocumentoAnexo a : lista) {
-	                    a.setSiddocext(siddocext);
-	                    flag = iDocumentoAnexoDao.insDocumentoAnexo(a);
-	                    if (flag == 1) {
-	                    	flagDocExt = 1; 
-	                    }
-	                }
-    			}
-    		}
-    	}
+	public void insDocumentoExterno(JIODocumentoExterno documentoExterno) throws Exception {
 		
-		return flagDocExt;
+		int siddocext = iDocumentoExternoDao.insDocumentoExterno(documentoExterno);
+		documentoExterno.getDocumentoPrincipal().setSiddocext(siddocext);
+		iDocumentoPrincipalDao.insDocumentoPrincipal(documentoExterno.getDocumentoPrincipal());
+		List<JIODocumentoAnexo> lista = documentoExterno.getLstDocAnexo();
+		if(lista != null && lista.size() > 0) {
+			// Se inserta cada uno de los documentos anexos
+			for (JIODocumentoAnexo a : lista) {
+				a.setSiddocext(siddocext);
+				iDocumentoAnexoDao.insDocumentoAnexo(a);
+			}
+		}
+		
 	}
-    
 }
