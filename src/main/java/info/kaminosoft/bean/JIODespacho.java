@@ -16,7 +16,7 @@ public class JIODespacho {
     private String vcuo;
     private String vcuoref;
     private String cflgest;
-   
+    private long sidemiext;
 
     private JIODocumentoExterno documentoExterno;
 
@@ -134,6 +134,14 @@ public class JIODespacho {
 
 	public void setVusureg(String vusureg) {
 		this.vusureg = vusureg;
+	}
+
+	public long getSidemiext() {
+		return sidemiext;
+	}
+
+	public void setSidemiext(long sidemiext) {
+		this.sidemiext = sidemiext;
 	}
 	
 	//private DocumentoExterno documentoExterno;

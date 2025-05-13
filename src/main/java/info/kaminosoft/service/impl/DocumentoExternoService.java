@@ -45,4 +45,15 @@ public class DocumentoExternoService implements IDocumentoExternoService {
 		}
 		
 	}
+	@Override
+	public void removeDocumentoExternoByIdEmiExt(long sidemiext) throws Exception {
+			
+		JIODocumentoExterno documentoExterno=iDocumentoExternoDao.getDocumentoExternoByIdemiext(sidemiext);
+		long siddocext=documentoExterno.getSiddocext();
+		
+		iDocumentoPrincipalDao.removeDocumentoPrincipalByIddocext(siddocext);
+		iDocumentoAnexoDao.removeDocumentoAnexoByIddocext(siddocext);
+		iDocumentoExternoDao.removeDocumentoExterno(siddocext);
+		
+	}
 }

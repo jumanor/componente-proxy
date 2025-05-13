@@ -35,4 +35,13 @@ public class DocumentoAnexoDao extends JdbcTemplate implements IDocumentoAnexoDa
 		
 		return id_column;
     }
+
+	@Override
+	public int removeDocumentoAnexoByIddocext(long siddocext) throws Exception {
+		StringBuilder sql = new StringBuilder();
+		sql.append("DELETE FROM esq_iotramite.IOTDTD_ANEXO ")
+		.append("WHERE siddocext = ?");
+
+		return update(sql.toString(), siddocext);
+	}
 }

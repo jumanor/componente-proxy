@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -70,5 +71,26 @@ public class DocumentoExterno extends JdbcTemplate implements IDocumentoExternoD
 		return id_column.intValue();
 	}
     
+	@Override
+	public JIODocumentoExterno getDocumentoExternoByIdemiext(long sidemiext) throws Exception {
+		
+		StringBuilder sql = new StringBuilder();
+		sql.append("SELECT siddocext ")
+		.append("FROM esq_iotramite.IOTDTM_DOC_EXTERNO ")
+		.append("WHERE sidemiext = ?");
+
+		return queryForObject(sql.toString(), 
+				new BeanPropertyRowMapper<>(JIODocumentoExterno.class),
+				sidemiext);
+	}
+
+	@Override
+	public int removeDocumentoExterno(long siddocext) throws Exception {
+		StringBuilder sql = new StringBuilder();
+		sql.append("DELETE FROM esq_iotramite.IOTDTM_DOC_EXTERNO ")
+		.append("WHERE siddocext = ?");
+
+		return update(sql.toString(), siddocext);
+	}
     
 }

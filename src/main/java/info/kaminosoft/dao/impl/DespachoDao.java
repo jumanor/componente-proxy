@@ -5,12 +5,14 @@ import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import info.kaminosoft.bean.JIODespacho;
 import info.kaminosoft.dao.IDespachoDao;
 import info.kaminosoft.dao.exceptions.ErrorDuplicadoCuoDespacho;
+import info.kaminosoft.dao.exceptions.ErrorDuplicadoCuoRefDespacho;
 import info.kaminosoft.dao.exceptions.ErrorDuplicadoNumRegStdDespacho;
 
 @Repository("iDespachoDao")
@@ -71,6 +73,9 @@ public class DespachoDao extends JdbcTemplate implements IDespachoDao {
 			if(e.getMessage().contains("unique_vcuo_despacho")){
 				throw new ErrorDuplicadoCuoDespacho("duplicado de CUO");
 			}
+			if(e.getMessage().contains("unique_vcuoref_despacho")){
+				throw new ErrorDuplicadoCuoRefDespacho("duplicado de CUOREF");
+			}
 			if(e.getMessage().contains("unique_vnumregstd_despacho")){
 				throw new ErrorDuplicadoNumRegStdDespacho("duplicado de NUMREGSTD");
 			}
@@ -118,5 +123,26 @@ public class DespachoDao extends JdbcTemplate implements IDespachoDao {
     	        vnumregstd
     	    );
 	}
+
+	@Override
+	public JIODespacho getDespachoByNumRegStd(String vnumregstd) throws Exception {
+		StringBuilder sql = new StringBuilder();
+		sql.append("SELECT sidemiext, vcuo, cflgest, vcuoref, ")
+		.append("vnumregstd, vrucentrec, vnomentrec ")
+		.append("FROM esq_iotramite.IOTDTC_DESPACHO ")
+		.append("WHERE vnumregstd = ?");
+
+		return queryForObject(sql.toString(), 
+				new BeanPropertyRowMapper<>(JIODespacho.class),
+				vnumregstd);
+	}
     
+	@Override
+	public int removeDespacho(long sidemiext) throws Exception {
+		StringBuilder sql = new StringBuilder();
+		sql.append("DELETE FROM esq_iotramite.IOTDTC_DESPACHO ")
+		.append("WHERE sidemiext = ?");
+
+		return update(sql.toString(), sidemiext);
+	}
 }

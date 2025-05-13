@@ -39,4 +39,13 @@ public class DocumentoPrincipalDao extends JdbcTemplate implements IDocumentoPri
 		System.out.println("DOCPRINCIPAL SUCCESS ::"+id_column);
 		return id_column;
     }
+
+	@Override
+	public int removeDocumentoPrincipalByIddocext(long siddocext) throws Exception {
+		StringBuilder sql = new StringBuilder();
+		sql.append("DELETE FROM esq_iotramite.IOTDTD_DOC_PRINCIPAL ")
+		.append("WHERE siddocext = ?");
+
+		return update(sql.toString(), siddocext);
+	}
 }

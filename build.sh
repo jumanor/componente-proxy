@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Ruta al directorio del proyecto Maven
-PROJECT_DIR="/home/jumanor/Documentos/region2025/componente-proxy"
+PROJECT_DIR="/home/jumanor/Documentos/region2025/componente-proxy-github"
 
 # Ruta al directorio de WildFly
 WILDFLY_HOME="/home/jumanor/Documentos/wildfly-13.0.0.Final"

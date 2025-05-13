@@ -4,6 +4,9 @@ import info.kaminosoft.bean.JIODespacho;
 
 public interface IDespachoExternaService {
 	
-	String insDespacho(JIODespacho despacho,String cflgest,String vnumregstdref) throws Exception;
+	void removeDespacho(String vnumregstd) throws Exception;
+	JIODespacho getDespachoByNumRegStd(String vnumregstd)throws Exception;
+	void updEstadoDespacho(String vnumregstd,String cflgest,String vnumregstdref) throws Exception;
+	JIODespacho insDespacho(JIODespacho despacho,String vnumregstdref) throws Exception;
 	String getCuoByNumRegStd(String vnumregstd) throws Exception;
 }

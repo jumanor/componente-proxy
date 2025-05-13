@@ -4,4 +4,5 @@ import info.kaminosoft.bean.JIODocumentoAnexo;
 
 public interface IDocumentoAnexoDao {
     int insDocumentoAnexo(JIODocumentoAnexo documentoAnexo) throws Exception;
+    int removeDocumentoAnexoByIddocext(long siddocext) throws Exception;
 }

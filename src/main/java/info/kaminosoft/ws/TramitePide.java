@@ -36,6 +36,7 @@ import info.kaminosoft.bean.JSDocumentoAnexo;
 import info.kaminosoft.bean.JSRespuesta;
 import info.kaminosoft.bean.Modo;
 import info.kaminosoft.dao.exceptions.ErrorDuplicadoCuoDespacho;
+import info.kaminosoft.dao.exceptions.ErrorDuplicadoCuoRefDespacho;
 import info.kaminosoft.dao.exceptions.ErrorDuplicadoNumRegStdDespacho;
 import info.kaminosoft.service.IDespachoExternaService;
 import info.kaminosoft.service.IRecepcionExternaService;
@@ -108,8 +109,32 @@ public class TramitePide {
 
 		return Response.status(Response.Status.OK).entity(respuesta).build();
 	}
+	
+	private boolean wsDocumentoDespachadoEnRemoto(String vcuo,String vnumregstd, String vrucentrec) throws Exception{
+			
+			String ruc_entidad = Utilitarios.ObtenerDatosPropertiesUserHome("configuracion", "RUC_ENTIDAD");
+			
+			//Consultamos el Documento en el remoto
+			JIOConsultaTramite jioConsultaTramite = new JIOConsultaTramite();
+			jioConsultaTramite.setVrucentrec(vrucentrec);
+			jioConsultaTramite.setVcuo(vcuo);
+			jioConsultaTramite.setVrucentrem(ruc_entidad);
+			JIORespuestaConsultaTramite jioRespuestaConsultaTramite = WSPide.wsConsultarTramiteResponse(jioConsultaTramite);
+			
+			if(jioRespuestaConsultaTramite.getVcodres().equals("0000")){
+				//El documnento esta en el remoto, es necesario actualizar el estado
+				String cflgestRemoto=jioRespuestaConsultaTramite.getCflgest();
+				//La unica posibilidad es "P" es imposible "R" o "O" debido a que en local no esta sincronizado
+				if(cflgestRemoto.equals("P")){
+					return true;
+				}
+			}
+			
+			return false;
+			
+	}
 
-	private Response insDespachoEstado(JSDespacho despacho,String cflgest,String vnumregstdref){ 
+	private Response insDespachoEstado(JSDespacho despacho,String vnumregstdref){ 
 		
 		JSRespuesta respuesta = new JSRespuesta();
 		try{
@@ -128,7 +153,7 @@ public class TramitePide {
 			jioDespacho.setVusureg(despacho.getVusureg());
 			jioDespacho.setVcuo(WSPide.wsGetCuo());
 			//jioDespacho.setVcuoref(vcuoref);
-			jioDespacho.setCflgest("E");//siempre E: Enviado			
+			jioDespacho.setCflgest("P");//siempre P: Pendiente			
 			
 
 			JIODocumentoExterno documentoExterno = new JIODocumentoExterno();
@@ -171,16 +196,69 @@ public class TramitePide {
 			if(lsDocumentoAnexo.size()>0){
 				documentoExterno.setVurldocanx(despacho.getVurldocanx());
 			}
+			
+			String codigoSuccess="0000";
+			String respuestaSuccessPide="";
+			JIODespacho resDespacho=getDespachoExternaServiceBean().getDespachoByNumRegStd(jioDespacho.getVnumregstd());
+			if(resDespacho==null) {
+				depurador.info("documento vnumregstd: "+jioDespacho.getVnumregstd()+ " ==> no existe en local");
+				//transaccion
+				JIODespacho jioDespachoRes=getDespachoExternaServiceBean().insDespacho(jioDespacho,vnumregstdref);
+				//remoto
+				respuestaSuccessPide=WSPide.wsRecepcionarTramiteResponse(jioDespachoRes);
+				//transaccion
+				getDespachoExternaServiceBean().updEstadoDespacho(jioDespachoRes.getVnumregstd(), "E",vnumregstdref);
+			}
+			else { 
 
-			String respuestaSuccessPide=getDespachoExternaServiceBean().insDespacho(jioDespacho,cflgest,vnumregstdref);
+				//El documento se encuentra el local con estado pendiente
+				if(resDespacho.getCflgest().equals("P")){
 
-			respuesta.setEstado("0000");
+					String vcuo=resDespacho.getVcuo();
+					boolean estado=wsDocumentoDespachadoEnRemoto(vcuo, jioDespacho.getVnumregstd(), jioDespacho.getVrucentrec());
+					if(estado==true) {
+						depurador.info("documento vnumregstd: "+jioDespacho.getVnumregstd()+ " ==> existe en local con estado pendiente y se encuentra en remoto");
+						respuestaSuccessPide="El Documento (sincronizado) Nº CUO "+vcuo+
+						" se encuentra a disposición para la recepción formal de la entidad destinataria "+
+						jioDespacho.getVnomentrec()+
+						" en los horarios de atención de su Mesa de Partes.";
+						
+						codigoSuccess="0001";//Codigo 0001: sincronizamos el documento con estado Pendiente
+											//Importante: El documental recibido se descarta !!!
+						
+						
+						//transaccion
+						getDespachoExternaServiceBean().updEstadoDespacho(jioDespacho.getVnumregstd(), "E",vnumregstdref);
+					}
+					else {
+						depurador.info("documento vnumregstd: "+jioDespacho.getVnumregstd()+ " ==> existe en local con estado pendiente y no se encuentra en remoto");
+						//removemos el documento con estado pendiente
+						getDespachoExternaServiceBean().removeDespacho(jioDespacho.getVnumregstd());
+						//transaccion
+						JIODespacho jioDespachoRes=getDespachoExternaServiceBean().insDespacho(jioDespacho,vnumregstdref);
+						//remoto
+						respuestaSuccessPide=WSPide.wsRecepcionarTramiteResponse(jioDespachoRes);
+						//transaccion
+						getDespachoExternaServiceBean().updEstadoDespacho(jioDespachoRes.getVnumregstd(), "E",vnumregstdref);
+					}
+
+				}
+				else{
+					String vnomentrec=resDespacho.getVnomentrec();
+					String vnumregstd=resDespacho.getVnumregstd();
+					throw new ErrorChangeStateDespacho("El documento "+vnumregstd+" ya es envio a la entidad destinataria "+vnomentrec);
+				}
+				
+			}
+			
+			
+			respuesta.setEstado(codigoSuccess);
 			respuesta.setData(respuestaSuccessPide);
 			respuesta.setError(null);
 
 		}catch(ErrorChangeStateDespacho e){
 
-			String codigoError="0001";
+			String codigoError="E001";
 			depurador.error("Error "+codigoError,e);
 
 			respuesta.setData(null);
@@ -189,7 +267,7 @@ public class TramitePide {
 
 		}catch(ErrorDespachoResponse e){
 
-			String codigoError="0001";
+			String codigoError="E001";
 			depurador.error("Error "+codigoError,e);
 
 			respuesta.setData(null);
@@ -198,7 +276,17 @@ public class TramitePide {
 		}
 		catch(ErrorDuplicadoCuoDespacho e){
 
-			String codigoError="0001";
+			String codigoError="E001";
+			depurador.error("Error "+codigoError,e);
+
+			respuesta.setData(null);
+			respuesta.setEstado(codigoError);
+			respuesta.setError(e.getMessage());
+
+		}
+		catch(ErrorDuplicadoCuoRefDespacho e){
+
+			String codigoError="E001";
 			depurador.error("Error "+codigoError,e);
 
 			respuesta.setData(null);
@@ -208,7 +296,7 @@ public class TramitePide {
 		}
 		catch(ErrorDuplicadoNumRegStdDespacho e){
 
-			String codigoError="0001";
+			String codigoError="E001";
 			depurador.error("Error "+codigoError,e);
 
 			respuesta.setData(null);
@@ -234,7 +322,7 @@ public class TramitePide {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
     public Response insDespachoEnviado(JSDespacho despacho) {
-		return insDespachoEstado(despacho,"E",null);
+		return insDespachoEstado(despacho,null);
     }
 	@POST
 	@RolesAllowed({"restringido"})
@@ -243,7 +331,7 @@ public class TramitePide {
 	@Consumes(MediaType.APPLICATION_JSON)
     public Response insDespachoSubsando(JSDespacho despacho) {
 		// con vcuoref actualimos el estado del despacho anterior
-		return insDespachoEstado(despacho,"S",despacho.getVnumregstdref());
+		return insDespachoEstado(despacho,despacho.getVnumregstdref());
     }
 
 	private Response insCargoEstado(JSCargo cargo,String cflgest,String vobs){
