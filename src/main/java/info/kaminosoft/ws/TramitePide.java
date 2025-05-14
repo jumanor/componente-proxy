@@ -335,16 +335,16 @@ public class TramitePide {
 		return insDespachoEstado(despacho,despacho.getVnumregstdref());
     }
 	
-	private String wsCargoEnRemoto(JIORecepcion recepcion,String vcuo,String vrucentrem)throws Exception {
+	private Object[] wsCargoEnRemoto(JIORecepcion recepcion,String vcuo,String vrucentrem)throws Exception {
 		
 		try {
 			
 			String respuestaSuccessPide=WSPide.wsCargoResponse(recepcion,vcuo,vrucentrem);
-			return respuestaSuccessPide;
+			return new Object[] { "",respuestaSuccessPide};
 		}
 		catch(ErrorCargoResponse e){
 			
-			//BUG CRITICO del componente de interoperabilidad
+			//BUG CRITICO del componente de interoperabilidad (PCM)
         	//1) En esta caso el estado de DESPACHO es "R", el cargo de recepcion esta en remoto
 			//2) En esta caso el estado de DESPACHO es "O", no se puede determinar que el cargo de recepcion esta en remoto
 			
@@ -353,9 +353,27 @@ public class TramitePide {
         	//DESPACHO=0 CODIGO_ERROR_TRAMITE == -1 	MENSAJE_CARGO_TRAMITE3 == NO SE PUDO REGISTRAR EL CARGO
 			//DESPACHO=P CODIGO_ERROR_TRAMITE == -1 	MENSAJE_CARGO_TRAMITE3 == NO SE PUDO REGISTRAR EL CARGO
 			
-			if(e.getVdesres()!=null && e.getVdesres().equals("EL CARGO YA SE ENCUENTRA REGISTRADO")) {
-				//En esta caso el estado de DESPACHO es "R", el cargo de recepcion esta en remoto
-				return null;
+			//IMPORTANTE: En caso se use el componente de interoperabilidad (modificado) se agrego
+
+			//DESPACHO=E CODIGO_ERROR_TRAMITE == 0000 	MENSAJE_CARGO_TRAMITE  == RECEPCION DE CARGO EXITOSO
+        	//DESPACHO=R CODIGO_ERROR_TRAMITE == -1 	MENSAJE_CARGO_TRAMITE2 == EL CARGO YA SE ENCUENTRA REGISTRADO
+        	//DESPACHO=0 CODIGO_ERROR_TRAMITE == -1 	MENSAJE_CARGO_TRAMITE4 == EL CARGO OBSERVADO YA SE ENCUENTRA REGISTRADO
+			//DESPACHO=P CODIGO_ERROR_TRAMITE == -1 	MENSAJE_CARGO_TRAMITE3 == NO SE PUDO REGISTRAR EL CARGO
+			
+			if(e.getVdesres()!=null) {
+				
+				if(e.getVdesres().equals("EL CARGO YA SE ENCUENTRA REGISTRADO")){
+					//En esta caso el estado de DESPACHO es "R", el cargo de recepcion esta en remoto
+					return new Object[] { "R",null};
+				}
+				//solo sucede si se usa el componente de interoperabilidad (modificado)
+				else if(e.getVdesres().equals("EL CARGO OBSERVADO YA SE ENCUENTRA REGISTRADO")){
+					//En esta caso el estado de DESPACHO es "O", el cargo de recepcion esta en remoto
+					return new Object[] { "O",null};
+				}
+				else
+					throw e;
+				
 			}
 			else {
 				
@@ -411,7 +429,10 @@ public class TramitePide {
 						String cflgestTmp=oldRecepcion.getVobs()==null ? "R" : "O";
 						oldRecepcion.setCflgest(cflgestTmp);
 						
-						respuestaSuccessPide=wsCargoEnRemoto(oldRecepcion,vcuo,vrucentrem);
+						Object[] resp=wsCargoEnRemoto(oldRecepcion,vcuo,vrucentrem);
+						String cflgestRemoto=(String) resp[0];//"R" - "O"
+						respuestaSuccessPide=(String) resp[1];	
+
 						if(respuestaSuccessPide!=null) {
 							depurador.info("cargo de vnumregstd: "+oldRecepcion.getVnumregstd()+ " ==> existe en local y enviamos a remoto");
 							//EL CARGO NO ESTA EN REMOTO
@@ -429,8 +450,10 @@ public class TramitePide {
 							//ADVERTENCIA: Debido a un Bug del **Componente de Interoperabilidad** solo sincronzamos "R"
 							//en caso de "O" no se puede determinar si el cargo de recepcion esta en remoto
 							//mayores detalles en el metodo wsCargoEnRemoto()
-							//ADVERTENCIA: Si en local es P  y en remoto es O (este es el BUG CRITICO)
-							getRecepcionServiceBean().updEstadoRecepccion(oldRecepcion.getVnumregstd(), "R");
+							//Si se usa el **componente de interoperabilidad (modificado)** se sincroniza "O"						
+							//ADVERTENCIA: Si en local es P  y en remoto es O (este es el BUG CRITICO solo si se
+							//usa el componente de interoperabilidad de la PCM)
+							getRecepcionServiceBean().updEstadoRecepccion(oldRecepcion.getVnumregstd(), cflgestRemoto);
 						}
 						
 					}
