@@ -532,7 +532,7 @@ public class TramitePide {
 
 	
 				respuesta.setData(null);
-				respuesta.setEstado("0001");
+				respuesta.setEstado("E001");
 				respuesta.setError(jioRespuestaConsultaTramite.getVdesres());
 			}
 			else{
