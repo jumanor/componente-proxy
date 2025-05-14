@@ -361,7 +361,7 @@ public class WSPide {
             
             if(!respuesta.getVcodres().equals("0000")){
                 depurador.error("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
-                throw new ErrorCargoResponse("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
+                throw new ErrorCargoResponse("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres(),respuesta.getVdesres());
             }
 
 			return respuesta.getVdesres();
@@ -406,7 +406,7 @@ public class WSPide {
             
             if(!respuesta.getVcodres().equals("0000")){
                 depurador.error("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
-                throw new ErrorCargoResponse("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
+                throw new ErrorCargoResponse("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres(),respuesta.getVdesres());
             }
 
 			return respuesta.getVdesres();
@@ -445,7 +445,7 @@ public class WSPide {
                 
                 if(!respuesta.getVcodres().equals("0000")){
                     depurador.error("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
-                    throw new ErrorCargoResponse("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
+                    throw new ErrorCargoResponse("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres(),respuesta.getVdesres());
                 }
 
 				return respuesta.getVdesres();

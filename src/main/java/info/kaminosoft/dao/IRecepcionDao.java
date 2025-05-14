@@ -6,4 +6,6 @@ public interface IRecepcionDao {
     
     public int updRecepcion(JIORecepcion recepcion); 
     public String[] getCuoAndRucEntRemByNumRegStd(String numRegStd);
+    public JIORecepcion getRecepcionWithPDFByNumRegStd(String vnumregstd)throws Exception;
+    public int updEstadoRecepcionByNumRegStd(String vnumregstd,String cflgest) throws Exception;
 }

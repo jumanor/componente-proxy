@@ -13,6 +13,11 @@ public class JIORecepcion {
     private String vobs;
     private String cflgest;
 	private ZonedDateTime dfecregstd;
+	
+	//adicionales
+	private String vcuo;
+	private String vrucentrem;
+	private long sidrecext;
 
 
 	public String getCcoduniorgstd() {
@@ -95,6 +100,30 @@ public class JIORecepcion {
 
 	public void setDfecregstd(ZonedDateTime dfecregstd) {
 		this.dfecregstd = dfecregstd;
+	}
+
+	public String getVcuo() {
+		return vcuo;
+	}
+
+	public void setVcuo(String vcuo) {
+		this.vcuo = vcuo;
+	}
+
+	public String getVrucentrem() {
+		return vrucentrem;
+	}
+
+	public void setVrucentrem(String vrucentrem) {
+		this.vrucentrem = vrucentrem;
+	}
+
+	public long getSidrecext() {
+		return sidrecext;
+	}
+
+	public void setSidrecext(long sidrecext) {
+		this.sidrecext = sidrecext;
 	}
 
 	

@@ -12,6 +12,7 @@ import info.kaminosoft.dao.IDespachoDao;
 import info.kaminosoft.service.IDespachoExternaService;
 import info.kaminosoft.service.IDocumentoExternoService;
 import info.kaminosoft.service.exceptions.ErrorChangeStateDespacho;
+import info.kaminosoft.service.exceptions.ErrorChangeStateRecepcion;
 
 @Service("iDespachoExternaService")
 public class DespachoExternaService implements IDespachoExternaService{
@@ -43,7 +44,13 @@ public class DespachoExternaService implements IDespachoExternaService{
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public void updEstadoDespacho(String vnumregstd,String cflgest,String vnumregstdref) throws Exception {
 		
-		iDespachoDao.updEstadoDespachoByNumRegStd(vnumregstd, cflgest);
+		int row=iDespachoDao.updEstadoDespachoByNumRegStd(vnumregstd, cflgest);
+		if(row==0){
+            throw new ErrorChangeStateDespacho("Error al actualizar el despacho: no se encontró el registro");
+        }
+        else if(row>1){
+            throw new ErrorChangeStateDespacho("Error al actualizar el despacho: se encontraron más de un registro");
+        }
 		if(vnumregstdref!=null){
 			JIODespacho resultado_ref=iDespachoDao.getDespachoByNumRegStd(vnumregstdref);
 			String vcuo_ref=resultado_ref.getVcuo();

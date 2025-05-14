@@ -42,6 +42,7 @@ import info.kaminosoft.service.IDespachoExternaService;
 import info.kaminosoft.service.IRecepcionExternaService;
 import info.kaminosoft.service.exceptions.ErrorCargoResponse;
 import info.kaminosoft.service.exceptions.ErrorChangeStateDespacho;
+import info.kaminosoft.service.exceptions.ErrorChangeStateRecepcion;
 import info.kaminosoft.service.exceptions.ErrorDespachoResponse;
 import info.kaminosoft.util.JwtUtil;
 import info.kaminosoft.util.Utilitarios;
@@ -333,7 +334,36 @@ public class TramitePide {
 		// con vcuoref actualimos el estado del despacho anterior
 		return insDespachoEstado(despacho,despacho.getVnumregstdref());
     }
-
+	
+	private String wsCargoEnRemoto(JIORecepcion recepcion,String vcuo,String vrucentrem)throws Exception {
+		
+		try {
+			
+			String respuestaSuccessPide=WSPide.wsCargoResponse(recepcion,vcuo,vrucentrem);
+			return respuestaSuccessPide;
+		}
+		catch(ErrorCargoResponse e){
+			
+			//BUG CRITICO del componente de interoperabilidad
+        	//1) En esta caso el estado de DESPACHO es "R", el cargo de recepcion esta en remoto
+			//2) En esta caso el estado de DESPACHO es "O", no se puede determinar que el cargo de recepcion esta en remoto
+			
+			//DESPACHO=E CODIGO_ERROR_TRAMITE == 0000 	MENSAJE_CARGO_TRAMITE  == RECEPCION DE CARGO EXITOSO
+        	//DESPACHO=R CODIGO_ERROR_TRAMITE == -1 	MENSAJE_CARGO_TRAMITE2 == EL CARGO YA SE ENCUENTRA REGISTRADO
+        	//DESPACHO=0 CODIGO_ERROR_TRAMITE == -1 	MENSAJE_CARGO_TRAMITE3 == NO SE PUDO REGISTRAR EL CARGO
+			//DESPACHO=P CODIGO_ERROR_TRAMITE == -1 	MENSAJE_CARGO_TRAMITE3 == NO SE PUDO REGISTRAR EL CARGO
+			
+			if(e.getVdesres()!=null && e.getVdesres().equals("EL CARGO YA SE ENCUENTRA REGISTRADO")) {
+				//En esta caso el estado de DESPACHO es "R", el cargo de recepcion esta en remoto
+				return null;
+			}
+			else {
+				
+				throw e;
+			}
+		}
+	}
+	
 	private Response insCargoEstado(JSCargo cargo,String cflgest,String vobs){
 
 		depurador.info("insertar cargo de recepcion: "+cargo.getVnumregstd());	
@@ -343,29 +373,103 @@ public class TramitePide {
 
 			String anioActual = String.valueOf(LocalDate.now().getYear());
 
-			JIORecepcion rec = new JIORecepcion();
-			rec.setVnumregstd(cargo.getVnumregstd());//unico en la tabla
-			rec.setVanioregstd(anioActual);
-			rec.setVuniorgstd(cargo.getVuniorgstd());
-			rec.setCcoduniorgstd(cargo.getCcoduniorgstd());
-			rec.setVusuregstd(cargo.getVusuregstd());
+			JIORecepcion newRecepcion = new JIORecepcion();
+			newRecepcion.setVnumregstd(cargo.getVnumregstd());//unico en la tabla
+			newRecepcion.setVanioregstd(anioActual);
+			newRecepcion.setVuniorgstd(cargo.getVuniorgstd());
+			newRecepcion.setCcoduniorgstd(cargo.getCcoduniorgstd());
+			newRecepcion.setVusuregstd(cargo.getVusuregstd());
 
 			//Jackson convierte el String a byte[] decodificado
-			rec.setBcarstd(cargo.getBcarstd());
-			rec.setVobs(vobs);
-			rec.setCflgest(cflgest);
+			newRecepcion.setBcarstd(cargo.getBcarstd());
+			newRecepcion.setVobs(vobs);
+			//rec.setCflgest(cflgest); El documento ingresado inicialmente siempre en "P"
 
 			ZonedDateTime fechaActual = ZonedDateTime.now();
-			rec.setDfecregstd(fechaActual);
+			newRecepcion.setDfecregstd(fechaActual);
+			
+			
+			String codigoSuccess="0000";
+			String respuestaSuccessPide="";
+			JIORecepcion oldRecepcion=getRecepcionServiceBean().getDespachoByNumRegStd(newRecepcion.getVnumregstd());
+			if(oldRecepcion==null) {
+				
+				throw new ErrorCargoResponse("El documento "+newRecepcion.getVnumregstd()+" no se encuentra registrado ");
+			}
+			else {
+				
+				if(oldRecepcion.getCflgest().equals("P")) {
+					
+					//Optimizar a futuro el acceso de bcarstd	
+					boolean estado=oldRecepcion.getBcarstd()!=null ? true : false;
+					
+					if(estado==true) {
+						
+						String vcuo = oldRecepcion.getVcuo();
+						String vrucentrem = oldRecepcion.getVrucentrem();
+						
+						String cflgestTmp=oldRecepcion.getVobs()==null ? "R" : "O";
+						oldRecepcion.setCflgest(cflgestTmp);
+						
+						respuestaSuccessPide=wsCargoEnRemoto(oldRecepcion,vcuo,vrucentrem);
+						if(respuestaSuccessPide!=null) {
+							depurador.info("cargo de vnumregstd: "+oldRecepcion.getVnumregstd()+ " ==> existe en local y enviamos a remoto");
+							//EL CARGO NO ESTA EN REMOTO
+							respuestaSuccessPide="RECEPCION DE CARGO EXITOSO (recuperado)";
+							codigoSuccess="0002";//Codigo 0002: se envio el cargo de recepcion recuperado al remoto
+							//transaccion
+							getRecepcionServiceBean().updEstadoRecepccion(oldRecepcion.getVnumregstd(), cflgestTmp);
+						}
+						else {
+							depurador.info("cargo de vnumregstd: "+oldRecepcion.getVnumregstd()+ " ==> existe en local y no se encuentra en remoto");	
+							//EL CARGO ESTA EN REMOTO
+							respuestaSuccessPide="RECEPCION DE CARGO EXITOSO (sincronizado)";
+							codigoSuccess="0001";//Codigo 0001: sicronizamos el cargo de recepccion con el remoto
+							//transaccion
+							//ADVERTENCIA: Debido a un Bug del **Componente de Interoperabilidad** solo sincronzamos "R"
+							//en caso de "O" no se puede determinar si el cargo de recepcion esta en remoto
+							//mayores detalles en el metodo wsCargoEnRemoto()
+							//ADVERTENCIA: Si en local es P  y en remoto es O (este es el BUG CRITICO)
+							getRecepcionServiceBean().updEstadoRecepccion(oldRecepcion.getVnumregstd(), "R");
+						}
+						
+					}
+					else {
+						depurador.info("cargo de vnumregstd: "+oldRecepcion.getVnumregstd()+ " ==> no existe en local");
+						//transaccion
+						getRecepcionServiceBean().insCargo(newRecepcion);
+						String vcuo = oldRecepcion.getVcuo();
+						String vrucentrem = oldRecepcion.getVrucentrem();
+						//remoto
+						newRecepcion.setCflgest(cflgest);//R - O
+						respuestaSuccessPide=WSPide.wsCargoResponse(newRecepcion,vcuo,vrucentrem);
+						//transaccion
+						getRecepcionServiceBean().updEstadoRecepccion(newRecepcion.getVnumregstd(), cflgest);
+					}
+					
+				}
+				else { //R - O
+					
+					String vnumregstd=oldRecepcion.getVnumregstd();
+					throw new ErrorCargoResponse("El cargo de recepción del documento "+vnumregstd+" ya se envio a la entidad ");
+				}
+			}
 		
-			String respuestaSuccessPide=getRecepcionServiceBean().insCargo(rec);
 
 			respuesta.setData(respuestaSuccessPide);
-			respuesta.setEstado("0000");
+			respuesta.setEstado(codigoSuccess);
 			respuesta.setError(null);
 
+		}catch (ErrorChangeStateRecepcion e) {
+			String codigoError="E001";
+			depurador.error("Error "+codigoError,e);
+
+			respuesta.setData(null);
+			respuesta.setEstado(codigoError);
+			respuesta.setError(e.getMessage());
+
 		} catch (ErrorCargoResponse e) {
-			String codigoError="0001";
+			String codigoError="E001";
 			depurador.error("Error "+codigoError,e);
 
 			respuesta.setData(null);
