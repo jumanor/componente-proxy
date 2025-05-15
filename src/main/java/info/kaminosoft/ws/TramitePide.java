@@ -518,6 +518,15 @@ public class TramitePide {
     @Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
     public Response insCargoRecepcionado(JSCargo cargo) {
+
+		JSRespuesta respuesta = new JSRespuesta();
+		if(cargo.getVobs()!=null){
+			respuesta.setData(null);
+			respuesta.setEstado("EV01");
+			respuesta.setError("El campo vobs no debe ser enviado");
+			return Response.status(Response.Status.OK).entity(respuesta).build();
+		}
+
 		return insCargoEstado(cargo,"R",null);
 	}
 
@@ -527,6 +536,15 @@ public class TramitePide {
     @Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
     public Response insCargoObservado(JSCargo cargo) {
+
+		JSRespuesta respuesta = new JSRespuesta();
+		if(cargo.getVobs()==null || cargo.getVobs().trim().isEmpty()){
+			respuesta.setData(null);
+			respuesta.setEstado("EV01");
+			respuesta.setError("El campo vobs no debe ser vacio");
+			return Response.status(Response.Status.OK).entity(respuesta).build();
+		}
+
 		return insCargoEstado(cargo,"O",cargo.getVobs());
 	}
 
