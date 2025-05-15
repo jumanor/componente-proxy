@@ -202,7 +202,7 @@ public class TramitePide {
 			String respuestaSuccessPide="";
 			JIODespacho resDespacho=getDespachoExternaServiceBean().getDespachoByNumRegStd(jioDespacho.getVnumregstd());
 			if(resDespacho==null) {
-				depurador.info("documento vnumregstd: "+jioDespacho.getVnumregstd()+ " ==> no existe en local");
+				depurador.info("documento vnumregstd: "+jioDespacho.getVnumregstd()+ " ==> creamos documento(pdf) y enviamos a remoto el documento(pdf)");
 				//transaccion
 				JIODespacho jioDespachoRes=getDespachoExternaServiceBean().insDespacho(jioDespacho,vnumregstdref);
 				//remoto
@@ -218,7 +218,7 @@ public class TramitePide {
 					String vcuo=resDespacho.getVcuo();
 					boolean estado=wsDocumentoDespachadoEnRemoto(vcuo, jioDespacho.getVnumregstd(), jioDespacho.getVrucentrec());
 					if(estado==true) {
-						depurador.info("documento vnumregstd: "+jioDespacho.getVnumregstd()+ " ==> existe en local con estado pendiente y se encuentra en remoto");
+						depurador.info("documento vnumregstd: "+jioDespacho.getVnumregstd()+ " ==> existe documento(pdf) y el remoto tiene el documento(pdf) con estado P entonces sincronizamos estado");
 						respuestaSuccessPide="El Documento (sincronizado) Nº CUO "+vcuo+
 						" se encuentra a disposición para la recepción formal de la entidad destinataria "+
 						jioDespacho.getVnomentrec()+
@@ -232,7 +232,7 @@ public class TramitePide {
 						getDespachoExternaServiceBean().updEstadoDespacho(jioDespacho.getVnumregstd(), "E",vnumregstdref);
 					}
 					else {
-						depurador.info("documento vnumregstd: "+jioDespacho.getVnumregstd()+ " ==> existe en local con estado pendiente y no se encuentra en remoto");
+						depurador.info("documento vnumregstd: "+jioDespacho.getVnumregstd()+ " ==> eliminamos documento(pdf) y creamos documento(pdf) entonce enviamos documento(pdf) a remoto");
 						//removemos el documento con estado pendiente
 						getDespachoExternaServiceBean().removeDespacho(jioDespacho.getVnumregstd());
 						//transaccion
@@ -434,7 +434,7 @@ public class TramitePide {
 						respuestaSuccessPide=(String) resp[1];	
 
 						if(respuestaSuccessPide!=null) {
-							depurador.info("cargo de vnumregstd: "+oldRecepcion.getVnumregstd()+ " ==> existe en local y enviamos a remoto");
+							depurador.info("cargo de vnumregstd: "+oldRecepcion.getVnumregstd()+ " ==> existe cargo(pdf) y enviamos a remoto el cargo(pdf) recuperado");
 							//EL CARGO NO ESTA EN REMOTO
 							respuestaSuccessPide="RECEPCION DE CARGO EXITOSO (recuperado)";
 							codigoSuccess="0002";//Codigo 0002: se envio el cargo de recepcion recuperado al remoto
@@ -442,7 +442,7 @@ public class TramitePide {
 							getRecepcionServiceBean().updEstadoRecepccion(oldRecepcion.getVnumregstd(), cflgestTmp);
 						}
 						else {
-							depurador.info("cargo de vnumregstd: "+oldRecepcion.getVnumregstd()+ " ==> existe en local y no se encuentra en remoto");	
+							depurador.info("cargo de vnumregstd: "+oldRecepcion.getVnumregstd()+ " ==> existe cargo(pdf) y el remoto tiene cargo(pdf) con estado R/O entonces sincronizamos estado");	
 							//EL CARGO ESTA EN REMOTO
 							respuestaSuccessPide="RECEPCION DE CARGO EXITOSO (sincronizado)";
 							codigoSuccess="0001";//Codigo 0001: sicronizamos el cargo de recepccion con el remoto
@@ -458,7 +458,7 @@ public class TramitePide {
 						
 					}
 					else {
-						depurador.info("cargo de vnumregstd: "+oldRecepcion.getVnumregstd()+ " ==> no existe en local");
+						depurador.info("cargo de vnumregstd: "+oldRecepcion.getVnumregstd()+ " ==> creamos cargo(pdf) y enviamos a remoto el cargo(pdf)");
 						//transaccion
 						getRecepcionServiceBean().insCargo(newRecepcion);
 						String vcuo = oldRecepcion.getVcuo();
