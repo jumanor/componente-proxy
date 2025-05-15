@@ -1,20 +1,19 @@
 package info.kaminosoft.dao.impl;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
+
 import java.sql.Timestamp;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
+
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
+
 import org.springframework.stereotype.Repository;
 
-import info.kaminosoft.bean.JIODespacho;
+
 import info.kaminosoft.bean.JIORecepcion;
 import info.kaminosoft.dao.IRecepcionDao;
 

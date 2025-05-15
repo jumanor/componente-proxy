@@ -18,7 +18,7 @@ public class DocumentoAnexoDao extends JdbcTemplate implements IDocumentoAnexoDa
 
     @Override
     public int insDocumentoAnexo(JIODocumentoAnexo documentoAnexo) throws Exception {
-        // TODO Auto-generated method stub
+        
         StringBuilder sql = new StringBuilder();
 		sql.append(" INSERT INTO esq_iotramite.IOTDTD_ANEXO(").
 		append(" siddocanx, siddocext, vnomdoc)").

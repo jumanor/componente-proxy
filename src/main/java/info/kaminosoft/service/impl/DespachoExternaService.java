@@ -12,7 +12,6 @@ import info.kaminosoft.dao.IDespachoDao;
 import info.kaminosoft.service.IDespachoExternaService;
 import info.kaminosoft.service.IDocumentoExternoService;
 import info.kaminosoft.service.exceptions.ErrorChangeStateDespacho;
-import info.kaminosoft.service.exceptions.ErrorChangeStateRecepcion;
 
 @Service("iDespachoExternaService")
 public class DespachoExternaService implements IDespachoExternaService{
