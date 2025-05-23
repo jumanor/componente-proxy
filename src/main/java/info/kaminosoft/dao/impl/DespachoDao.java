@@ -5,15 +5,18 @@ import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import info.kaminosoft.bean.JICargoDespacho;
 import info.kaminosoft.bean.JIODespacho;
 import info.kaminosoft.dao.IDespachoDao;
 import info.kaminosoft.dao.exceptions.ErrorDuplicadoCuoDespacho;
 import info.kaminosoft.dao.exceptions.ErrorDuplicadoCuoRefDespacho;
 import info.kaminosoft.dao.exceptions.ErrorDuplicadoNumRegStdDespacho;
+import info.kaminosoft.dao.exceptions.ErrorSinRegistroDespacho;
 
 @Repository("iDespachoDao")
 public class DespachoDao extends JdbcTemplate implements IDespachoDao {
@@ -47,7 +50,7 @@ public class DespachoDao extends JdbcTemplate implements IDespachoDao {
 		sql.append(" INSERT INTO esq_iotramite.IOTDTC_DESPACHO( ").
 		append(" sidemiext,vnumregstd, vanioregstd, vrucentrec, vnomentrec, ").
 		append(" ctipdociderem, vnumdociderem, vcoduniorgrem, vuniorgrem, ").
-	    append(" vusureg, vcuo, vcuoref, cflgest) ").
+		append(" vusureg, vcuo, vcuoref, cflgest) ").
 		append(" VALUES( ").
 		append(" nextval('esq_iotramite.nu_int_des_ext'),?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ) returning sidemiext ");
 		
@@ -111,17 +114,17 @@ public class DespachoDao extends JdbcTemplate implements IDespachoDao {
 	@Override
 	public String[] getCuoAndEstadoByNumRegStd(String vnumregstd) throws Exception {
 		StringBuilder sql = new StringBuilder();
-    	sql.append("SELECT vcuo,cflgest ")
-       .append("FROM esq_iotramite.IOTDTC_DESPACHO ")
-       .append("WHERE vnumregstd = ?");
+		sql.append("SELECT vcuo,cflgest ")
+		.append("FROM esq_iotramite.IOTDTC_DESPACHO ")
+		.append("WHERE vnumregstd = ?");
 
-    	return queryForObject(sql.toString(), 
-    	        (rs, rowNum) -> new String[]{
-    	            rs.getString("vcuo"),
-    	            rs.getString("cflgest")
-    	        }, 
-    	        vnumregstd
-    	    );
+		return queryForObject(sql.toString(), 
+				(rs, rowNum) -> new String[]{
+					rs.getString("vcuo"),
+					rs.getString("cflgest")
+				}, 
+				vnumregstd
+			);
 	}
 
 	@Override
@@ -144,5 +147,24 @@ public class DespachoDao extends JdbcTemplate implements IDespachoDao {
 		.append("WHERE sidemiext = ?");
 
 		return update(sql.toString(), sidemiext);
+	}
+
+	@Override
+	public JICargoDespacho getCargoByNumRegStd(String vnumregstd) throws Exception {
+		StringBuilder sql = new StringBuilder();
+		sql.append("SELECT vnumregstdrec, vanioregstdrec, dfecregstdrec, vuniorgstdrec, vusuregstdrec, ")
+		.append("bcarstdrec, cflgest, vobs ")
+		.append("FROM esq_iotramite.IOTDTC_DESPACHO ")
+		.append("WHERE vnumregstd = ?");
+
+		try{
+
+			return queryForObject(sql.toString(), 
+					new BeanPropertyRowMapper<>(JICargoDespacho.class),
+					vnumregstd);
+
+		}catch(EmptyResultDataAccessException ex){
+			throw new ErrorSinRegistroDespacho("registro no encontrado");
+		}
 	}
 }

@@ -14,3 +14,6 @@
 # Maven
 log/
 target/
+
+others/examples-php/despacho_local.pdf
+others/examples-php/cargo_despacho_local.pdf
