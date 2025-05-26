@@ -247,7 +247,7 @@ public class TramitePide {
 				else{
 					String vnomentrec=resDespacho.getVnomentrec();
 					String vnumregstd=resDespacho.getVnumregstd();
-					throw new ErrorChangeStateDespacho("El documento "+vnumregstd+" ya es envio a la entidad destinataria "+vnomentrec);
+					throw new ErrorDespachoResponse("El documento "+vnumregstd+" ya es envio a la entidad destinataria "+vnomentrec);
 				}
 				
 			}
@@ -259,7 +259,7 @@ public class TramitePide {
 
 		}catch(ErrorChangeStateDespacho e){
 
-			String codigoError="E001";
+			String codigoError="E003";
 			depurador.error("Error "+codigoError,e);
 
 			respuesta.setData(null);
@@ -268,7 +268,7 @@ public class TramitePide {
 
 		}catch(ErrorDespachoResponse e){
 
-			String codigoError="E001";
+			String codigoError="E002";
 			depurador.error("Error "+codigoError,e);
 
 			respuesta.setData(null);
