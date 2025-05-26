@@ -96,13 +96,15 @@ public class DespachoDao extends JdbcTemplate implements IDespachoDao {
 	public int updEstadoDespachoByNumRegStd(String vnumregstd,String cflgest) throws Exception {
 		StringBuilder sql = new StringBuilder();
 		sql.append(" update esq_iotramite.iotdtc_despacho").
-		append(" set cflgest = ? ").
+		append(" set cflgest = ?, ").
+		append(" dfecenv = CASE WHEN ? = 'E' THEN NOW() ELSE dfecenv END ").
 		append(" where ").
 		append(" vnumregstd = ? ");
 			
 		Integer flag = 0;
 		flag=update(sql.toString(),
 				
+					cflgest,
 					cflgest,
 					vnumregstd
 		);
