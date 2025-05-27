@@ -157,13 +157,14 @@ public class RecepcionDao extends JdbcTemplate implements IRecepcionDao{
 
 		StringBuilder sql = new StringBuilder();
 		sql.append(" update esq_iotramite.iotdtc_recepcion").
-		append(" set cflgest = ? ").
+		append(" set cflgest = ?, ").
+		append(" dfecmod = CASE WHEN ? IN ('R', 'O') THEN NOW() ELSE dfecmod END ").
 		append(" where ").
 		append(" vnumregstd = ? ");
 			
 		Integer flag = 0;
 		flag=update(sql.toString(),
-				
+					cflgest,
 					cflgest,
 					vnumregstd
 		);
