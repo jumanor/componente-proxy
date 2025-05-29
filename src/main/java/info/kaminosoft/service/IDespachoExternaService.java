@@ -8,5 +8,4 @@ public interface IDespachoExternaService {
 	JIODespacho getDespachoByNumRegStd(String vnumregstd)throws Exception;
 	void updEstadoDespacho(String vnumregstd,String cflgest,String vnumregstdref) throws Exception;
 	JIODespacho insDespacho(JIODespacho despacho,String vnumregstdref) throws Exception;
-	String getCuoByNumRegStd(String vnumregstd) throws Exception;
 }

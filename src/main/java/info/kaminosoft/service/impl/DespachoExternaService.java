@@ -98,10 +98,4 @@ public class DespachoExternaService implements IDespachoExternaService{
 		return despacho;
 	}
 
-	@Override
-	public String getCuoByNumRegStd(String vnumregstd) throws Exception {
-		return iDespachoDao.getCuoAndEstadoByNumRegStd(vnumregstd)[0];
-	}
-	
-
 }

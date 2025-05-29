@@ -560,27 +560,37 @@ public class TramitePide {
 
 			String ruc_entidad = Utilitarios.ObtenerDatosPropertiesUserHome("configuracion", "RUC_ENTIDAD");
 			
-			String vcuo=getDespachoExternaServiceBean().getCuoByNumRegStd(vnumregstd);
-
-			JIOConsultaTramite jioConsultaTramite = new JIOConsultaTramite();
-			jioConsultaTramite.setVrucentrec(vrucentrec);
-			jioConsultaTramite.setVcuo(vcuo);
-			jioConsultaTramite.setVrucentrem(ruc_entidad);
-			JIORespuestaConsultaTramite jioRespuestaConsultaTramite = WSPide.wsConsultarTramiteResponse(jioConsultaTramite);
-			
-			
-			if(!jioRespuestaConsultaTramite.getVcodres().equals("0000")){
-
-	
+			JIODespacho despacho=getDespachoExternaServiceBean().getDespachoByNumRegStd(vnumregstd);
+			if(despacho==null) {
+				
 				respuesta.setData(null);
 				respuesta.setEstado("E001");
-				respuesta.setError(jioRespuestaConsultaTramite.getVdesres());
-			}
-			else{
+				respuesta.setError("Documento no encontrado");
 				
-				respuesta.setData(jioRespuestaConsultaTramite);
-				respuesta.setEstado("0000");
-				respuesta.setError(null);
+			}
+			else {
+				
+				String vcuo=despacho.getVcuo();
+				JIOConsultaTramite jioConsultaTramite = new JIOConsultaTramite();
+				jioConsultaTramite.setVrucentrec(vrucentrec);
+				jioConsultaTramite.setVcuo(vcuo);
+				jioConsultaTramite.setVrucentrem(ruc_entidad);
+				JIORespuestaConsultaTramite jioRespuestaConsultaTramite = WSPide.wsConsultarTramiteResponse(jioConsultaTramite);
+				
+				
+				if(!jioRespuestaConsultaTramite.getVcodres().equals("0000")){
+	
+		
+					respuesta.setData(null);
+					respuesta.setEstado("E001");
+					respuesta.setError(jioRespuestaConsultaTramite.getVdesres());
+				}
+				else{
+					
+					respuesta.setData(jioRespuestaConsultaTramite);
+					respuesta.setEstado("0000");
+					respuesta.setError(null);
+				}
 			}
 
 		}catch(Exception e){
