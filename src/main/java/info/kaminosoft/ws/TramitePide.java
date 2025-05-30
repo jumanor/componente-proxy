@@ -44,6 +44,7 @@ import info.kaminosoft.service.exceptions.ErrorCargoResponse;
 import info.kaminosoft.service.exceptions.ErrorChangeStateDespacho;
 import info.kaminosoft.service.exceptions.ErrorChangeStateRecepcion;
 import info.kaminosoft.service.exceptions.ErrorDespachoResponse;
+import info.kaminosoft.service.exceptions.ErrorWSCargoResponse;
 import info.kaminosoft.util.JwtUtil;
 import info.kaminosoft.util.Utilitarios;
 import info.kaminosoft.util.WSPide;
@@ -342,7 +343,8 @@ public class TramitePide {
 			String respuestaSuccessPide=WSPide.wsCargoResponse(recepcion,vcuo,vrucentrem);
 			return new Object[] { "",respuestaSuccessPide};
 		}
-		catch(ErrorCargoResponse e){
+		catch(ErrorWSCargoResponse e){
+			
 			
 			//BUG CRITICO del componente de interoperabilidad (PCM)
         	//1) En esta caso el estado de DESPACHO es "R", el cargo de recepcion esta en remoto
@@ -360,14 +362,14 @@ public class TramitePide {
         	//DESPACHO=0 CODIGO_ERROR_TRAMITE == -1 	MENSAJE_CARGO_TRAMITE4 == EL CARGO OBSERVADO YA SE ENCUENTRA REGISTRADO
 			//DESPACHO=P CODIGO_ERROR_TRAMITE == -1 	MENSAJE_CARGO_TRAMITE3 == NO SE PUDO REGISTRAR EL CARGO
 			
-			if(e.getVdesres()!=null) {
+			if(e.getMessage()!=null) {
 				
-				if(e.getVdesres().equals("EL CARGO YA SE ENCUENTRA REGISTRADO")){
+				if(e.getMessage().equals("EL CARGO YA SE ENCUENTRA REGISTRADO")){
 					//En esta caso el estado de DESPACHO es "R", el cargo de recepcion esta en remoto
 					return new Object[] { "R",null};
 				}
 				//solo sucede si se usa el componente de interoperabilidad (modificado)
-				else if(e.getVdesres().equals("EL CARGO OBSERVADO YA SE ENCUENTRA REGISTRADO")){
+				else if(e.getMessage().equals("EL CARGO OBSERVADO YA SE ENCUENTRA REGISTRADO")){
 					//En esta caso el estado de DESPACHO es "O", el cargo de recepcion esta en remoto
 					return new Object[] { "O",null};
 				}
@@ -499,7 +501,16 @@ public class TramitePide {
 			respuesta.setEstado(codigoError);
 			respuesta.setError(e.getMessage());
 
-		} catch (Exception e) {
+		} catch (ErrorWSCargoResponse e) {
+			String codigoError="E002";
+			depurador.error("Error "+codigoError,e);
+
+			respuesta.setData(null);
+			respuesta.setEstado(codigoError);
+			respuesta.setError(e.getMessage()==null?"Error en el servicio de la entidad receptora ":e.getMessage());
+
+		}
+		catch (Exception e) {
 			String codigoError="-1";
 			depurador.error("Error "+codigoError,e);
 

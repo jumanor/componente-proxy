@@ -22,6 +22,7 @@ import info.kaminosoft.bean.JIOTipoDocumentoTramite;
 import info.kaminosoft.bean.Modo;
 import info.kaminosoft.service.exceptions.ErrorCargoResponse;
 import info.kaminosoft.service.exceptions.ErrorDespachoResponse;
+import info.kaminosoft.service.exceptions.ErrorWSCargoResponse;
 
 
 public class WSPide {
@@ -313,7 +314,7 @@ public class WSPide {
 		return lst;
 	}
 
-    public static String wsCargoResponse(JIORecepcion recepcion,String vcuo,String vrucentrem) throws ErrorCargoResponse {
+    public static String wsCargoResponse(JIORecepcion recepcion,String vcuo,String vrucentrem) throws Exception {
 		if(modo==Modo.PROD){
 
             return wsCargoResponseProd(recepcion, vcuo, vrucentrem);
@@ -330,7 +331,7 @@ public class WSPide {
 			throw new UnsupportedOperationException("No se ha implementado el servicio");
 		}
 	}
-    private static String wsCargoResponseProd(JIORecepcion recepcion,String vcuo,String vrucentrec) throws ErrorCargoResponse {
+    private static String wsCargoResponseProd(JIORecepcion recepcion,String vcuo,String vrucentrec) throws Exception {
         String ruc_entidad = Utilitarios.ObtenerDatosPropertiesUserHome("configuracion", "RUC_ENTIDAD");
 
         prod2.pe.gob.segdi.wsiopidetramite.ws.PcmIMgdTramite locator=new prod2.pe.gob.segdi.wsiopidetramite.ws.PcmIMgdTramite();
@@ -361,12 +362,12 @@ public class WSPide {
             
             if(!respuesta.getVcodres().equals("0000")){
                 depurador.error("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
-                throw new ErrorCargoResponse("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres(),respuesta.getVdesres());
+                throw new ErrorWSCargoResponse(respuesta.getVdesres());
             }
 
 			return respuesta.getVdesres();
             
-        } catch (ErrorCargoResponse e){
+        } catch (ErrorWSCargoResponse e){
             throw e;
         } catch (Exception e) {
             depurador.error(e.getMessage(),e);
@@ -374,7 +375,7 @@ public class WSPide {
         }
 
     }
-    private static String wsCargoResponseDev(JIORecepcion recepcion,String vcuo,String vrucentrec) throws ErrorCargoResponse {
+    private static String wsCargoResponseDev(JIORecepcion recepcion,String vcuo,String vrucentrec) throws Exception {
 
         String ruc_entidad = Utilitarios.ObtenerDatosPropertiesUserHome("configuracion", "RUC_ENTIDAD");
     	
@@ -406,12 +407,12 @@ public class WSPide {
             
             if(!respuesta.getVcodres().equals("0000")){
                 depurador.error("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
-                throw new ErrorCargoResponse("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres(),respuesta.getVdesres());
+                throw new ErrorWSCargoResponse(respuesta.getVdesres());
             }
 
 			return respuesta.getVdesres();
             
-        } catch (ErrorCargoResponse e){
+        } catch (ErrorWSCargoResponse e){
             throw e;
         } catch (Exception e) {
             depurador.error(e.getMessage(),e);
@@ -419,7 +420,7 @@ public class WSPide {
         }
     
     }
-    private static String wsCargoResponseDevLocal(JIORecepcion recepcion,String vcuo) throws ErrorCargoResponse {
+    private static String wsCargoResponseDevLocal(JIORecepcion recepcion,String vcuo) throws Exception {
 
         local2.pe.gob.segdi.wsiotramite.ws.Tramite_Service locator=new local2.pe.gob.segdi.wsiotramite.ws.Tramite_Service();
 			try {
@@ -445,12 +446,13 @@ public class WSPide {
                 
                 if(!respuesta.getVcodres().equals("0000")){
                     depurador.error("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
-                    throw new ErrorCargoResponse("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres(),respuesta.getVdesres());
+                    throw new ErrorWSCargoResponse(respuesta.getVdesres());
                 }
 
 				return respuesta.getVdesres();
 				
-			} catch (ErrorCargoResponse e){
+			} catch (ErrorWSCargoResponse e){
+				
                 throw e;
             } catch (Exception e) {
 				depurador.error(e.getMessage(),e);
