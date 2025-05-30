@@ -604,7 +604,7 @@ public class TramitePide {
 		
 					respuesta.setData(null);
 					respuesta.setEstado("E001");
-					respuesta.setError(jioRespuestaConsultaTramite.getVdesres());
+					respuesta.setError(jioRespuestaConsultaTramite.getVdesres()==null?"Error en el servicio de la entidad receptora ":jioRespuestaConsultaTramite.getVdesres());
 				}
 				else{
 					
