@@ -45,6 +45,7 @@ import info.kaminosoft.service.exceptions.ErrorChangeStateDespacho;
 import info.kaminosoft.service.exceptions.ErrorChangeStateRecepcion;
 import info.kaminosoft.service.exceptions.ErrorDespachoResponse;
 import info.kaminosoft.service.exceptions.ErrorWSCargoResponse;
+import info.kaminosoft.service.exceptions.ErrorWSDespachoResponse;
 import info.kaminosoft.util.JwtUtil;
 import info.kaminosoft.util.Utilitarios;
 import info.kaminosoft.util.WSPide;
@@ -267,7 +268,16 @@ public class TramitePide {
 			respuesta.setEstado(codigoError);
 			respuesta.setError(e.getMessage());
 
-		}catch(ErrorDespachoResponse e){
+		}catch (ErrorWSDespachoResponse e) {
+			String codigoError="E004";
+			depurador.error("Error "+codigoError,e);
+
+			respuesta.setData(null);
+			respuesta.setEstado(codigoError);
+			respuesta.setError(e.getMessage()==null?"Error en el servicio de la entidad receptora ":e.getMessage());
+
+		}
+		catch(ErrorDespachoResponse e){
 
 			String codigoError="E002";
 			depurador.error("Error "+codigoError,e);

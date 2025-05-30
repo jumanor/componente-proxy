@@ -21,7 +21,7 @@ import info.kaminosoft.bean.JIORespuestaConsultaTramite;
 import info.kaminosoft.bean.JIOTipoDocumentoTramite;
 import info.kaminosoft.bean.Modo;
 import info.kaminosoft.service.exceptions.ErrorCargoResponse;
-import info.kaminosoft.service.exceptions.ErrorDespachoResponse;
+import info.kaminosoft.service.exceptions.ErrorWSDespachoResponse;
 import info.kaminosoft.service.exceptions.ErrorWSCargoResponse;
 
 
@@ -528,7 +528,7 @@ public class WSPide {
 			
 			if(!respuesta.getVcodres().equals("0000")){
                     depurador.error("Error no se pudo enviar el Documento de Despacho por la PIDE: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
-                    throw new ErrorDespachoResponse("Error no se pudo enviar el Documento de Despacho por la PIDE: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
+                    throw new ErrorWSDespachoResponse(respuesta.getVdesres());
             }
 
 			return respuesta.getVdesres();
@@ -582,7 +582,7 @@ public class WSPide {
 			
 			if(!respuesta.getVcodres().equals("0000")){
                     depurador.error("Error no se pudo enviar el Documento de Despacho por la PIDE: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
-                    throw new ErrorDespachoResponse("Error no se pudo enviar el Documento de Despacho por la PIDE: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
+                    throw new ErrorWSDespachoResponse(respuesta.getVdesres());
             }
 
 			return respuesta.getVdesres();
@@ -637,7 +637,7 @@ public class WSPide {
 			
 			if(!respuesta.getVcodres().equals("0000")){
                     depurador.error("Error no se pudo enviar el Documento de Despacho por la PIDE: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
-                    throw new ErrorDespachoResponse("Error no se pudo enviar el Documento de Despacho por la PIDE: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
+                    throw new ErrorWSDespachoResponse(respuesta.getVdesres());
             }
 
 			return respuesta.getVdesres();
