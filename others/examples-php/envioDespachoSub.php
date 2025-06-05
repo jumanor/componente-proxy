@@ -64,7 +64,7 @@ function wsEnvioDespacho($despacho){
         throw new Exception($resp['error']);
     }
 
-    $resp;
+    return $resp;
 }
 
 function persistirEnSGD($despacho){
