@@ -7,6 +7,8 @@ import java.util.List;
 
 public class JIODocumentoDespachado {
     
+	private long siddocext;
+	
     private String vnumregstd;
     private String vanioregstd;
     private String vrucentrec;
@@ -263,6 +265,14 @@ public class JIODocumentoDespachado {
 
 	public void setLstDocAnexo(List<JIODocumentoAnexo> lstDocAnexo) {
 		this.lstDocAnexo = lstDocAnexo;
+	}
+
+	public long getSiddocext() {
+		return siddocext;
+	}
+
+	public void setSiddocext(long siddocext) {
+		this.siddocext = siddocext;
 	}
 	
 	//private DocumentoExterno documentoExterno;

@@ -30,7 +30,7 @@ public class DocumentoDespachadoLocalDao extends JdbcTemplate implements IDocume
 		.append("des.vcoduniorgrem, des.vuniorgrem, des.vusureg, ")
 		.append("des.vcuo, des.vcuoref, des.cflgest, ")
 		
-		.append("de.vnomentemi, de.ccodtipdoc, de.vnumdoc,de.dfecdoc, de.vuniorgdst, de.vnomdst, ")
+		.append("de.siddocext, de.vnomentemi, de.ccodtipdoc, de.vnumdoc,de.dfecdoc, de.vuniorgdst, de.vnomdst, ")
 		//.append("de.vnomentemi, de.ccodtipdoc, de.vnumdoc, de.vuniorgdst, de.vnomdst, ")
 		.append("de.vnomcardst, de.vasu, de.snumanx,de.snumfol, de.vurldocanx, ")
 		

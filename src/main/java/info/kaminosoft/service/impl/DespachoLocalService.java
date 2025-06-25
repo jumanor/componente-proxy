@@ -31,7 +31,7 @@ public class DespachoLocalService implements IDespachoLocalService{
 		
 		JIODocumentoDespachado documentoDespachado=iDocumentoDespachadoLocalDao.getDocumentoDespachado(vnumregstd);
 		
-		List<JIODocumentoAnexo> anexos=iDocumentoAnexoDao.getDocumentosAnexosByIddocext(documentoDespachado.getSidemiext());
+		List<JIODocumentoAnexo> anexos=iDocumentoAnexoDao.getDocumentosAnexosByIddocext(documentoDespachado.getSiddocext());
 
 		if(anexos.size() > 0) {
 			documentoDespachado.setLstDocAnexo(anexos);
