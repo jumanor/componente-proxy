@@ -13,6 +13,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import info.kaminosoft.bean.JICargoDespacho;
+import info.kaminosoft.bean.JICargoRecepcion;
 import info.kaminosoft.bean.JIODocumentoDespachado;
 import info.kaminosoft.bean.JIODocumentoRecepcionado;
 import info.kaminosoft.bean.JSRespuesta;
@@ -151,6 +152,43 @@ public class TramiteLocal {
 			respuesta.setData(null);
 			respuesta.setEstado(codigoError);
 			respuesta.setError("Error inesperado al recuperar documento de recepcion ");
+		}
+		
+		
+		return Response.status(Response.Status.OK).entity(respuesta).build();
+	}
+	
+	@GET
+	@RolesAllowed({"restringido"})
+    @Path("/cargo/recepcionado/{vnumregstd}/{token}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getCargoRecepcionadoLocalByNumRegStd(@PathParam("vnumregstd") String vnumregstd,@PathParam("token") String token){
+		
+		JSRespuesta respuesta = new JSRespuesta();
+		
+		try {
+			
+			JICargoRecepcion cargo=getRecepcionLocalServiceBean().getCargoRecepcionado(vnumregstd);
+			respuesta.setData(cargo);
+			respuesta.setEstado("0000");
+			respuesta.setError(null);
+		
+		}catch(ErrorSinRegistroRecepcion e){
+			
+			String codigoError="E001";
+			depurador.error("Error "+codigoError,e);
+
+			respuesta.setData(null);
+			respuesta.setEstado(codigoError);
+			respuesta.setError("registro no encontrado");
+		
+		}catch (Exception e) {
+			String codigoError="-1";
+			depurador.error("Error "+codigoError,e);
+
+			respuesta.setData(null);
+			respuesta.setEstado(codigoError);
+			respuesta.setError("Error inesperado al recuperar cargo de recepcion ");
 		}
 		
 		

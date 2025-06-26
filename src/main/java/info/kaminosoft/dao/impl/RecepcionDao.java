@@ -8,14 +8,18 @@ import java.time.ZoneId;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import org.springframework.stereotype.Repository;
 
 
+import info.kaminosoft.bean.JICargoRecepcion;
 import info.kaminosoft.bean.JIORecepcion;
 import info.kaminosoft.dao.IRecepcionDao;
+
+import info.kaminosoft.dao.exceptions.ErrorSinRegistroRecepcion;
 
 @Repository("iRecepcionDao")
 public class RecepcionDao extends JdbcTemplate implements IRecepcionDao{
@@ -170,5 +174,24 @@ public class RecepcionDao extends JdbcTemplate implements IRecepcionDao{
 		);
 		
 		return flag;
+	}
+
+	@Override
+	public JICargoRecepcion getCargoByNumRegStd(String vnumregstd) throws Exception {
+		StringBuilder sql = new StringBuilder();
+		sql.append("SELECT vnumregstd, vanioregstd, vuniorgstd, ccoduniorgstd, dfecregstd, ")
+		.append("vusuregstd, bcarstd, cflgest, vobs, vcuo, vcuoref ")
+		.append("FROM esq_iotramite.IOTDTC_RECEPCION ")
+		.append("WHERE vnumregstd = ?");
+
+		try{
+
+			return queryForObject(sql.toString(), 
+					new BeanPropertyRowMapper<>(JICargoRecepcion.class),
+					vnumregstd);
+
+		}catch(EmptyResultDataAccessException ex){
+			throw new ErrorSinRegistroRecepcion("registro no encontrado");
+		}
 	}
 }
