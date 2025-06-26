@@ -14,7 +14,7 @@ require_once 'utils.php';
     } 
 
     $token = $resp['data'];
-    $url = "http://127.0.0.1:8080/componente-proxy/rest/local/documento/recepcionado/$vnumregstd/$token";
+    $url = "http://127.0.0.1:8080/componente-proxy/rest/local/cargo/recepcionado/$vnumregstd/$token";
 
 
     $resp=api_interoperabilidad_ant($url, [], 'GET');
@@ -25,9 +25,10 @@ require_once 'utils.php';
         throw new Exception($resp['error']);
     }
 
-    $documentoPdf = base64_decode($resp["data"]["bpdfdoc"]);
-    file_put_contents("recepcion_local.pdf", $documentoPdf);
+    $cargoPdf = base64_decode($resp["data"]["bcarstd"]);
+    file_put_contents("cargo_recepcion_local.pdf", $cargoPdf);
 
-    $resp["data"]["bpdfdoc"]="pdf";
+    $resp["data"]["bcarstd"]="pdf";
+
     var_dump($resp);
 ?>
