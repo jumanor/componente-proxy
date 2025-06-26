@@ -113,7 +113,7 @@ public class TramiteLocal {
 
 			respuesta.setData(null);
 			respuesta.setEstado(codigoError);
-			respuesta.setError("Error inesperado al recuperar documento de despacho ");
+			respuesta.setError("Error inesperado al recuperar cargo de despacho ");
 		}
 		
 		

@@ -266,7 +266,7 @@ public class TramitePide {
 
 			respuesta.setData(null);
 			respuesta.setEstado(codigoError);
-			respuesta.setError(e.getMessage());
+			respuesta.setError(e.getMessage()==null?"Ocurrio un error inesperado":e.getMessage());
 
 		}catch (ErrorWSDespachoResponse e) {
 			String codigoError="E004";
@@ -284,7 +284,7 @@ public class TramitePide {
 
 			respuesta.setData(null);
 			respuesta.setEstado(codigoError);
-			respuesta.setError(e.getMessage());
+			respuesta.setError(e.getMessage()==null?"Ocurrio un error inesperado":e.getMessage());
 		}
 		catch(ErrorDuplicadoCuoDespacho e){
 
@@ -293,7 +293,7 @@ public class TramitePide {
 
 			respuesta.setData(null);
 			respuesta.setEstado(codigoError);
-			respuesta.setError(e.getMessage());
+			respuesta.setError(e.getMessage()==null?"Ocurrio un error inesperado":e.getMessage());
 
 		}
 		catch(ErrorDuplicadoCuoRefDespacho e){
@@ -303,7 +303,7 @@ public class TramitePide {
 
 			respuesta.setData(null);
 			respuesta.setEstado(codigoError);
-			respuesta.setError(e.getMessage());
+			respuesta.setError(e.getMessage()==null?"Ocurrio un error inesperado":e.getMessage());
 
 		}
 		catch(ErrorDuplicadoNumRegStdDespacho e){
@@ -313,7 +313,7 @@ public class TramitePide {
 
 			respuesta.setData(null);
 			respuesta.setEstado(codigoError);
-			respuesta.setError(e.getMessage());
+			respuesta.setError(e.getMessage()==null?"Ocurrio un error inesperado":e.getMessage());
 
 		}
 		catch(Exception e){
@@ -501,7 +501,7 @@ public class TramitePide {
 
 			respuesta.setData(null);
 			respuesta.setEstado(codigoError);
-			respuesta.setError(e.getMessage());
+			respuesta.setError(e.getMessage()==null?"Ocurrio un error inesperado":e.getMessage());
 
 		} catch (ErrorCargoResponse e) {
 			String codigoError="E001";
@@ -509,7 +509,7 @@ public class TramitePide {
 
 			respuesta.setData(null);
 			respuesta.setEstado(codigoError);
-			respuesta.setError(e.getMessage());
+			respuesta.setError(e.getMessage()==null?"Ocurrio un error inesperado":e.getMessage());
 
 		} catch (ErrorWSCargoResponse e) {
 			String codigoError="E002";
