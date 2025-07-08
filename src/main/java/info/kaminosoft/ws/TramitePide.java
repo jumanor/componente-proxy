@@ -274,7 +274,7 @@ public class TramitePide {
 
 			respuesta.setData(null);
 			respuesta.setEstado(codigoError);
-			respuesta.setError(e.getMessage()==null?"Error en el servicio de la entidad receptora ":e.getMessage());
+			respuesta.setError(e.getMessage()==null || e.getMessage().trim().equals("") ? "Error en el servicio de la entidad receptora ":e.getMessage());
 
 		}
 		catch(ErrorDespachoResponse e){
@@ -517,7 +517,7 @@ public class TramitePide {
 
 			respuesta.setData(null);
 			respuesta.setEstado(codigoError);
-			respuesta.setError(e.getMessage()==null?"Error en el servicio de la entidad receptora ":e.getMessage());
+			respuesta.setError(e.getMessage()==null || e.getMessage().trim().equals("") ? "Error en el servicio de la entidad receptora ":e.getMessage());
 
 		}
 		catch (Exception e) {
