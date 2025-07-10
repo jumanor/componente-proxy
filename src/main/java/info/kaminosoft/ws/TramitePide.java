@@ -350,7 +350,10 @@ public class TramitePide {
 		
 		try {
 			
+			depurador.info("wsCargoEnRemoto vcuo:"+vcuo+" vrucentrem(receptor): "+vrucentrem);
 			String respuestaSuccessPide=WSPide.wsCargoResponse(recepcion,vcuo,vrucentrem);
+			depurador.info("wsCargoEnRemoto respuestaSuccessPide:"+respuestaSuccessPide);
+			
 			return new Object[] { "",respuestaSuccessPide};
 		}
 		catch(ErrorWSCargoResponse e){

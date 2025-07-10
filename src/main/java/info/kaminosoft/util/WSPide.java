@@ -361,7 +361,22 @@ public class WSPide {
             prod2.pe.gob.segdi.wsiopidetramite.ws.RespuestaCargoTramite respuesta=locator.getPcmIMgdTramiteHttpsSoap11Endpoint().cargoResponse(cargoRequest);
             
             if(!respuesta.getVcodres().equals("0000")){
-                depurador.error("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
+				
+				//Esta entidad modifico la respuesta del componente de interoperabilidad
+				//Las respuestas no son el estandar de la PIDE y no se puede determinar en caso sea necesario sincronizacion
+				if(vrucentrec.equals("20504915523") && respuesta.getVcodres().trim().equals("")){
+					
+					depurador.error("Error en el servicio PIDE de cargo de trámite (respuesta no estandar renombrada con 'RECEPCION DE CARGO EXITOSO') rucentrec="+vrucentrec+" cuo="+vcuo+" codres="+respuesta.getVcodres()+" desres="+respuesta.getVdesres());
+					return "RECEPCION DE CARGO EXITOSO";
+				}
+
+				//Las respuestas no son el estandar de la PIDE y son incorrectas
+				if(respuesta.getVcodres().trim().equals("")){
+					depurador.error("Error en el servicio PIDE de cargo de trámite (respuesta no estandar) rucentrec="+vrucentrec+" cuo="+vcuo+" codres="+respuesta.getVcodres()+" desres"+respuesta.getVdesres());
+					throw new ErrorWSCargoResponse("Error en el servicio de la Entidad receptora (comunicarse con soporte técnico) ");
+				}
+            
+                depurador.error("Error en el servicio PIDE de cargo de trámite rucentrec="+vrucentrec+" cuo="+vcuo+" codres="+respuesta.getVcodres()+" desres="+respuesta.getVdesres());
                 throw new ErrorWSCargoResponse(respuesta.getVdesres());
             }
 
