@@ -53,12 +53,7 @@ try{
     if($respuesta["estado"]=="0000"){
         echo "ENVIO REGULAR\n";
     }
-    if($respuesta["estado"]=="0001"){
-        echo "ENVIO SINCRONIZADO CON REMOTO\n";
-    }
-    if($respuesta["estado"]=="0002"){
-        echo "ENVIO RECUPERADO Y ENVIADO A REMOTO\n";
-    }
+    
     
     //$pdo->commit();
     echo $respuesta["data"];

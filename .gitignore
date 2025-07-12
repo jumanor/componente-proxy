@@ -15,7 +15,7 @@
 log/
 target/
 
-others/examples-php/despacho_local.pdf
-others/examples-php/cargo_despacho_local.pdf
-others/examples-php/recepcion_local.pdf
-others/examples-php/cargo_recepcion_local.pdf
+others/examples-php/local/despacho_local.pdf
+others/examples-php/local/cargo_despacho_local.pdf
+others/examples-php/local/recepcion_local.pdf
+others/examples-php/local/cargo_recepcion_local.pdf
