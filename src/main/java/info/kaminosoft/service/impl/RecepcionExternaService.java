@@ -13,7 +13,6 @@ import info.kaminosoft.bean.JIORecepcion;
 import info.kaminosoft.dao.IRecepcionDao;
 import info.kaminosoft.service.IRecepcionExternaService;
 import info.kaminosoft.service.exceptions.ErrorCargoResponse;
-import info.kaminosoft.service.exceptions.ErrorChangeStateRecepcion;
 
 
 
@@ -39,20 +38,6 @@ public class RecepcionExternaService implements IRecepcionExternaService {
 		
 	}
     
-    @Override
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updEstadoRecepccion(String vnumregstd,String cflgest) throws Exception {
-		
-		int row=iRecepcionDao.updEstadoRecepcionByNumRegStd(vnumregstd, cflgest);
-		if(row==0){
-            throw new ErrorChangeStateRecepcion("Error al actualizar la recepción: no se encontró el registro");
-        }
-        else if(row>1){
-            throw new ErrorChangeStateRecepcion("Error al actualizar la recepción: se encontraron más de un registro");
-        }
-		
-	}
-
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void insCargo(JIORecepcion rec) throws ErrorCargoResponse  {

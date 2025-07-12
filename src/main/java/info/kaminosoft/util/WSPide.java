@@ -359,28 +359,14 @@ public class WSPide {
             //cargoRequest.setVdesanxstdrec("null");no se usa
             
             prod2.pe.gob.segdi.wsiopidetramite.ws.RespuestaCargoTramite respuesta=locator.getPcmIMgdTramiteHttpsSoap11Endpoint().cargoResponse(cargoRequest);
-            
+            depurador.info("wsCargoResponse(vcuo="+vcuo+",vrucentrec="+vrucentrec+") ==> vcodres="+respuesta.getVcodres()+" vdesres="+respuesta.getVdesres());
+			
             if(!respuesta.getVcodres().equals("0000")){
-				
-				//Esta entidad modifico la respuesta del componente de interoperabilidad
-				//Las respuestas no son el estandar de la PIDE y no se puede determinar en caso sea necesario sincronizacion
-				if(vrucentrec.equals("20504915523") && respuesta.getVcodres().trim().equals("")){
-					
-					depurador.error("Error en el servicio PIDE de cargo de trámite (respuesta no estandar renombrada con 'RECEPCION DE CARGO EXITOSO') rucentrec="+vrucentrec+" cuo="+vcuo+" codres="+respuesta.getVcodres()+" desres="+respuesta.getVdesres());
-					return "RECEPCION DE CARGO EXITOSO";
-				}
-
-				//Las respuestas no son el estandar de la PIDE y son incorrectas
-				if(respuesta.getVcodres().trim().equals("")){
-					depurador.error("Error en el servicio PIDE de cargo de trámite (respuesta no estandar) rucentrec="+vrucentrec+" cuo="+vcuo+" codres="+respuesta.getVcodres()+" desres"+respuesta.getVdesres());
-					throw new ErrorWSCargoResponse("Error en el servicio de la Entidad receptora (comunicarse con soporte técnico) ");
-				}
-            
-                depurador.error("Error en el servicio PIDE de cargo de trámite rucentrec="+vrucentrec+" cuo="+vcuo+" codres="+respuesta.getVcodres()+" desres="+respuesta.getVdesres());
-                throw new ErrorWSCargoResponse(respuesta.getVdesres());
+				depurador.error("Error en el servicio PIDE de cargo de trámite rucentrec="+vrucentrec+" cuo="+vcuo+" codres="+respuesta.getVcodres()+" desres="+respuesta.getVdesres());
+                throw new ErrorWSCargoResponse(respuesta.getVcodres(),respuesta.getVdesres());
             }
-
-			return respuesta.getVdesres();
+            
+            return respuesta.getVdesres();
             
         } catch (ErrorWSCargoResponse e){
             throw e;
@@ -419,10 +405,11 @@ public class WSPide {
             //cargoRequest.setVdesanxstdrec("null");no se usa
             
             dev2.pe.gob.segdi.wsiopidetramite.ws.RespuestaCargoTramite respuesta=locator.getIOTramitePort().cargoResponse(cargoRequest);
-            
+            depurador.info("wsCargoResponse(vcuo="+vcuo+",vrucentrec="+vrucentrec+") ==> vcodres="+respuesta.getVcodres()+" vdesres="+respuesta.getVdesres());
+			
             if(!respuesta.getVcodres().equals("0000")){
                 depurador.error("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
-                throw new ErrorWSCargoResponse(respuesta.getVdesres());
+                throw new ErrorWSCargoResponse(respuesta.getVcodres(),respuesta.getVdesres());
             }
 
 			return respuesta.getVdesres();
@@ -441,7 +428,7 @@ public class WSPide {
 			try {
 				local2.pe.gob.segdi.wsiotramite.ws.CargoTramite cargoRequest=new local2.pe.gob.segdi.wsiotramite.ws.CargoTramite();
                 
-                byte[] pdfDocEncode = Base64.getEncoder().encode(recepcion.getBcarstd());
+				byte[] pdfDocEncode = Base64.getEncoder().encode(recepcion.getBcarstd());
                 GregorianCalendar dfecregstd = GregorianCalendar.from(recepcion.getDfecregstd());
                 XMLGregorianCalendar dfecregstdxml = DatatypeFactory.newInstance().newXMLGregorianCalendar(dfecregstd);
                 
@@ -458,10 +445,11 @@ public class WSPide {
                 //cargoRequest.setVdesanxstdrec("null");no se usa
 
 				local2.pe.gob.segdi.wsiotramite.ws.RespuestaCargoTramite respuesta=locator.getTramitePort().cargoResponse(cargoRequest);
-                
+				depurador.info("wsCargoResponse(vcuo="+vcuo+") ==> vcodres="+respuesta.getVcodres()+" vdesres="+respuesta.getVdesres());
+				
                 if(!respuesta.getVcodres().equals("0000")){
                     depurador.error("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
-                    throw new ErrorWSCargoResponse(respuesta.getVdesres());
+                    throw new ErrorWSCargoResponse(respuesta.getVcodres(),respuesta.getVdesres());
                 }
 
 				return respuesta.getVdesres();

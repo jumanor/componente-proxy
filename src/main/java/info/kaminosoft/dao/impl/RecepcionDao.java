@@ -41,8 +41,8 @@ public class RecepcionDao extends JdbcTemplate implements IRecepcionDao{
 		append(" dfecregstd = ?,").//Este campo lo actualizamos
 		append(" vusuregstd = ?,").
 		append(" bcarstd = ?,").
-		append(" vobs = ? ").
-		//append(" cflgest = ?").
+		append(" vobs = ? ,").
+		append(" cflgest = ?").
 		//append(" cflgenvstdintergrt = ?,").
 		//append(" vidusuregstdintergrt = ?").
 		append(" WHERE").
@@ -57,8 +57,8 @@ public class RecepcionDao extends JdbcTemplate implements IRecepcionDao{
 			"dfecregstd=" + recepcion.getDfecregstd() + ", " +
 			"vusuregstd=" + recepcion.getVusuregstd() + ", " +
 			"bcarstd=" + recepcion.getBcarstd() + ", " +
-			"vobs=" + (recepcion.getVobs() == null ? "null" : recepcion.getVobs().trim()) + "] "
-			//"cflgest=" + recepcion.getCflgest() + "]"
+			"vobs=" + (recepcion.getVobs() == null ? "null" : recepcion.getVobs().trim()) + ", "+
+			"cflgest=" + recepcion.getCflgest() + "]"
 		);
 
 		Timestamp dfecregstd = Timestamp.from(recepcion.getDfecregstd().toInstant());
@@ -74,7 +74,7 @@ public class RecepcionDao extends JdbcTemplate implements IRecepcionDao{
 				recepcion.getVusuregstd(),
 				recepcion.getBcarstd(),
 				recepcion.getVobs()==null?null:recepcion.getVobs().trim(),
-				//recepcion.getCflgest(),
+				recepcion.getCflgest(),
 				//cflgenvstdintergrt,
 				//vidusuregstdintergrt,
 				recepcion.getVnumregstd()

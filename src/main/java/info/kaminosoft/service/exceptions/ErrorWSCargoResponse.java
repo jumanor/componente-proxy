@@ -2,7 +2,14 @@
 
 public class ErrorWSCargoResponse  extends Exception {
 	
-    public ErrorWSCargoResponse(String message) {
+	private String code;
+	
+    public ErrorWSCargoResponse(String code,String message) {
         super(message);
+        this.code=code;
     }
+
+	public String getCode() {
+		return code;
+	}
 }
