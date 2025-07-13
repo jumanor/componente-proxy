@@ -1,23 +1,41 @@
 package info.kaminosoft.service.impl;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Form;
+import javax.ws.rs.core.Response;
+
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.jboss.logging.Logger;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import info.kaminosoft.bean.JIODespacho;
+import info.kaminosoft.bean.JIORespuestaConsultaTramite;
 import info.kaminosoft.dao.IDespachoDao;
 import info.kaminosoft.service.IDespachoExternaService;
 import info.kaminosoft.service.IDocumentoExternoService;
 import info.kaminosoft.service.exceptions.ErrorChangeStateDespacho;
+import info.kaminosoft.service.exceptions.ExceptionEnvioCargoStdExterno;
+import info.kaminosoft.util.Utilitarios;
+
+import java.security.cert.X509Certificate;
 
 @Service("iDespachoExternaService")
 public class DespachoExternaService implements IDespachoExternaService{
 	private static Logger depurador = Logger.getLogger(DespachoExternaService.class.getName());
 	
-
 	@Autowired
 	IDocumentoExternoService iDocumentoExternoService;
 
@@ -96,6 +114,97 @@ public class DespachoExternaService implements IDespachoExternaService{
 		iDocumentoExternoService.insDocumentoExterno(despacho.getDocumentoExterno());
 
 		return despacho;
+	}
+
+
+	public void event_cargo(String vnumregstd,String cflgest) throws ExceptionEnvioCargoStdExterno{
+		String nombre_std = Utilitarios.ObtenerDatosPropertiesUserHome("configuracion", "NOMBRE_STD");
+		String user = Utilitarios.ObtenerDatosPropertiesUserHome("configuracion", "URL_WEBHOOK_STD_USER");
+    	String pass = Utilitarios.ObtenerDatosPropertiesUserHome("configuracion", "URL_WEBHOOK_STD_PASS");
+    	String path_api_despacho = Utilitarios.ObtenerDatosPropertiesUserHome("configuracion", "URL_WEBHOOK_STD_PATH_EVENT_CARGO");
+    	
+    	TrustManager[] trustAllCerts = new TrustManager[]{
+            new X509TrustManager() {
+                public X509Certificate[] getAcceptedIssuers() { return null; }
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+                public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+            }
+        };
+        
+        try{
+        	
+	        SSLContext sslContext = SSLContext.getInstance("TLS");
+	        sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+			
+			HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic(user,pass);
+			
+			Client client = ClientBuilder.newBuilder()
+	                .sslContext(sslContext)
+	                .hostnameVerifier((hostname, session) -> true)
+	                .build();
+	        client.register(feature);
+	        
+			Form frm=new Form();
+			frm.param("vnumregstd", vnumregstd);
+			frm.param("cflgest",cflgest);
+	
+			WebTarget webTarget = client.target(path_api_despacho);
+			
+			Invocation.Builder invocationBuilder = webTarget.request(javax.ws.rs.core.MediaType.APPLICATION_JSON);
+			Response response;
+
+		
+			response =  invocationBuilder.post(Entity.form(frm));
+			if(response.getStatus()==200) {
+				
+				String cad=response.readEntity(String.class);
+				depurador.info("respuesta de "+nombre_std+" ==>"+cad);
+				
+				JSONObject obj=new JSONObject(cad);
+				
+				if(obj.getString("estado").equals("0000")) {
+						
+					//Success
+
+				}
+				else {
+					
+					throw new ExceptionEnvioCargoStdExterno(obj.getString("error"));
+					
+				}
+			}	
+			else {
+				String error=response.readEntity(String.class);
+				throw new ExceptionEnvioCargoStdExterno(error);
+
+			}
+			
+		}catch(Exception e) {
+			String error="error la realizar peticion POST a: "+path_api_despacho;
+			depurador.error(error,e);
+			throw new ExceptionEnvioCargoStdExterno(error);
+		}
+
+		
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+	public int insCargoRecepcion(JIORespuestaConsultaTramite cargo,String vcuo,String vnumregstd) throws Exception {
+		
+		int row=0;
+		if(cargo.getCflgest().equals("R")) {
+			cargo.setVobs(null);
+			row=iDespachoDao.updCargo(cargo,vcuo);
+			event_cargo(vnumregstd,"R");
+			depurador.info("cargo sincronizado ==> row="+row+" cflgest=R");
+		}
+		if(cargo.getCflgest().equals("O")) {
+			row=iDespachoDao.updCargo(cargo,vcuo);
+			event_cargo(vnumregstd,"O");
+			depurador.info("cargo sincronizado ==> row="+row+" cflgest=O");
+		}
+		return row;
 	}
 
 }

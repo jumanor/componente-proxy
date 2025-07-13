@@ -486,7 +486,21 @@ public class TramitePide {
 
 		return insCargoEstado(cargo,"O",cargo.getVobs());
 	}
-
+	
+	private int insCargoRecepcionSincronizado(JIORespuestaConsultaTramite cargo,String vcuo,String vnumregstd) {
+		
+		int row=0;
+		try {
+			
+			row=getDespachoExternaServiceBean().insCargoRecepcion(cargo,vcuo,vnumregstd);
+			
+		} catch (Exception e) {
+			
+			depurador.error("cargo no sincronizado ==> message="+e.getMessage(),e);
+		}
+		return row;
+	}
+	
 	@GET
     @RolesAllowed({"restringido"})
     @Path("/consultar/recepcion/{vrucentrec}/{vnumregstd}/{token}")
@@ -516,6 +530,7 @@ public class TramitePide {
 				jioConsultaTramite.setVrucentrem(ruc_entidad);
 				JIORespuestaConsultaTramite jioRespuestaConsultaTramite = WSPide.wsConsultarTramiteResponse(jioConsultaTramite);
 				
+				depurador.info("consulta remota cargo vrucentrec="+vrucentrec+" vcuo="+vcuo+" ruc_entidad="+ruc_entidad);
 				
 				if(!jioRespuestaConsultaTramite.getVcodres().equals("0000")){
 	
@@ -526,8 +541,22 @@ public class TramitePide {
 				}
 				else{
 					
+					String estado="0000";
+					/*
+						El cargo del remoto, lo persistimos manualmente cuando se realiza la
+						consulta del estado del documento enviado
+					 */
+					if(despacho.getCflgest().equals("E")) {
+						if(jioRespuestaConsultaTramite.getCflgest().equals("R") || jioRespuestaConsultaTramite.getCflgest().equals("O")){
+							int row=insCargoRecepcionSincronizado(jioRespuestaConsultaTramite,vcuo,vnumregstd);
+							if(row==0) {//No se pudo sincronizar
+								estado="0001";
+							}
+						}
+					}
+					
 					respuesta.setData(jioRespuestaConsultaTramite);
-					respuesta.setEstado("0000");
+					respuesta.setEstado(estado);
 					respuesta.setError(null);
 				}
 			}

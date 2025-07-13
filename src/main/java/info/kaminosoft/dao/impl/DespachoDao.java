@@ -1,5 +1,7 @@
 package info.kaminosoft.dao.impl;
 
+import java.util.GregorianCalendar;
+
 import javax.sql.DataSource;
 
 
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import info.kaminosoft.bean.JICargoDespacho;
 import info.kaminosoft.bean.JIODespacho;
+import info.kaminosoft.bean.JIORespuestaConsultaTramite;
 import info.kaminosoft.dao.IDespachoDao;
 import info.kaminosoft.dao.exceptions.ErrorDuplicadoCuoDespacho;
 import info.kaminosoft.dao.exceptions.ErrorDuplicadoCuoRefDespacho;
@@ -168,5 +171,41 @@ public class DespachoDao extends JdbcTemplate implements IDespachoDao {
 		}catch(EmptyResultDataAccessException ex){
 			throw new ErrorSinRegistroDespacho("registro no encontrado");
 		}
+	}
+	
+	@Override
+	public int updCargo(JIORespuestaConsultaTramite cargo,String vcuo) throws Exception {
+		StringBuilder sql = new StringBuilder();
+		sql.append(" UPDATE ESQ_IOTRAMITE.IOTDTC_DESPACHO").
+		append(" set vnumregstdrec = ?,").
+		append(" vanioregstdrec = ?,").
+		append(" dfecregstdrec = ?,").
+		append(" vuniorgstdrec = ?,").
+		append(" vusuregstdrec = ?,").
+		append(" bcarstdrec = ?,").
+		append(" cflgest = ?,").
+		append(" vobs = ? ").
+		//append(" vdesanxstdrec = ?").
+		append(" WHERE").
+		append(" vcuo = ?");
+			
+		GregorianCalendar gregCal = cargo.getDfecregstd().toGregorianCalendar();
+
+		Integer flag = 0;
+		flag=update(sql.toString(),
+				
+				cargo.getVnumregstd(),
+				cargo.getVanioregstd(),
+				gregCal.getTime(),
+				cargo.getVuniorgstd(),
+				cargo.getVusuregstd(),
+				cargo.getBcarstd(),
+				cargo.getCflgest(),
+				cargo.getVobs()	,
+				//cargo.getVdesanxstdrec(),
+				vcuo
+		);
+		
+		return flag;
 	}
 }

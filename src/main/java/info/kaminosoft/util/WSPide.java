@@ -60,8 +60,8 @@ public class WSPide {
 		jioRespuestaConsultaTramite.setVcodres(respuesta.getVcodres());
 		jioRespuestaConsultaTramite.setVdesres(respuesta.getVdesres());
 
-		jioRespuestaConsultaTramite.setVcuo(respuesta.getVcuo());
-		jioRespuestaConsultaTramite.setVcuoref(respuesta.getVcuoref());
+		//jioRespuestaConsultaTramite.setVcuo(respuesta.getVcuo());
+		//jioRespuestaConsultaTramite.setVcuoref(respuesta.getVcuoref());
 		jioRespuestaConsultaTramite.setVnumregstd(respuesta.getVnumregstd());
 		jioRespuestaConsultaTramite.setVanioregstd(respuesta.getVanioregstd());
 		jioRespuestaConsultaTramite.setVuniorgstd(respuesta.getVuniorgstd());
@@ -98,8 +98,8 @@ public class WSPide {
 		jioRespuestaConsultaTramite.setVcodres(respuesta.getVcodres());
 		jioRespuestaConsultaTramite.setVdesres(respuesta.getVdesres());
 		
-		jioRespuestaConsultaTramite.setVcuo(respuesta.getVcuo());
-		jioRespuestaConsultaTramite.setVcuoref(respuesta.getVcuoref());
+		//jioRespuestaConsultaTramite.setVcuo(respuesta.getVcuo());
+		//jioRespuestaConsultaTramite.setVcuoref(respuesta.getVcuoref());
 		jioRespuestaConsultaTramite.setVnumregstd(respuesta.getVnumregstd());
 		jioRespuestaConsultaTramite.setVanioregstd(respuesta.getVanioregstd());
 		jioRespuestaConsultaTramite.setVuniorgstd(respuesta.getVuniorgstd());
@@ -130,8 +130,8 @@ public class WSPide {
 		jioRespuestaConsultaTramite.setVcodres(respuesta.getVcodres());
 		jioRespuestaConsultaTramite.setVdesres(respuesta.getVdesres());
 		
-		jioRespuestaConsultaTramite.setVcuo(respuesta.getVcuo());
-		jioRespuestaConsultaTramite.setVcuoref(respuesta.getVcuoref());
+		//jioRespuestaConsultaTramite.setVcuo(respuesta.getVcuo());
+		//jioRespuestaConsultaTramite.setVcuoref(respuesta.getVcuoref());
 		jioRespuestaConsultaTramite.setVnumregstd(respuesta.getVnumregstd());
 		jioRespuestaConsultaTramite.setVanioregstd(respuesta.getVanioregstd());
 		jioRespuestaConsultaTramite.setVuniorgstd(respuesta.getVuniorgstd());
