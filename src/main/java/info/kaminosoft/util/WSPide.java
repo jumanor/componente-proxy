@@ -528,6 +528,7 @@ public class WSPide {
 
 			prod2.pe.gob.segdi.wsiopidetramite.ws.PcmIMgdTramite locator=new prod2.pe.gob.segdi.wsiopidetramite.ws.PcmIMgdTramite();
 			prod2.pe.gob.segdi.wsiopidetramite.ws.RespuestaTramite respuesta=locator.getPcmIMgdTramiteHttpsSoap11Endpoint().recepcionarTramiteResponse(despacho);
+			depurador.info("wsRecepcionarTramiteResponse(vcuo="+jioDespacho.getVcuo()+",vrucentrec="+jioDespacho.getVrucentrec()+") ==> vcodres="+respuesta.getVcodres()+" vdesres="+respuesta.getVdesres());
 			
 			if(!respuesta.getVcodres().equals("0000")){
                     depurador.error("Error no se pudo enviar el Documento de Despacho por la PIDE: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
@@ -582,6 +583,7 @@ public class WSPide {
 
 			dev2.pe.gob.segdi.wsiopidetramite.ws.IOTramiteService locator=new dev2.pe.gob.segdi.wsiopidetramite.ws.IOTramiteService();
 			dev2.pe.gob.segdi.wsiopidetramite.ws.RespuestaTramite respuesta=locator.getIOTramitePort().recepcionarTramiteResponse(despacho);
+			depurador.info("wsRecepcionarTramiteResponse(vcuo="+jioDespacho.getVcuo()+",vrucentrec="+jioDespacho.getVrucentrec()+") ==> vcodres="+respuesta.getVcodres()+" vdesres="+respuesta.getVdesres());
 			
 			if(!respuesta.getVcodres().equals("0000")){
                     depurador.error("Error no se pudo enviar el Documento de Despacho por la PIDE: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
@@ -637,6 +639,7 @@ public class WSPide {
 			
 			local2.pe.gob.segdi.wsiotramite.ws.Tramite_Service locator=new local2.pe.gob.segdi.wsiotramite.ws.Tramite_Service();
 			local2.pe.gob.segdi.wsiotramite.ws.RespuestaTramite respuesta=locator.getTramitePort().recepcionarTramiteResponse(despacho);
+			depurador.info("wsRecepcionarTramiteResponse(vcuo="+jioDespacho.getVcuo()+",vrucentrec="+jioDespacho.getVrucentrec()+") ==> vcodres="+respuesta.getVcodres()+" vdesres="+respuesta.getVdesres());
 			
 			if(!respuesta.getVcodres().equals("0000")){
                     depurador.error("Error no se pudo enviar el Documento de Despacho por la PIDE: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
