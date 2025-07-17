@@ -65,7 +65,7 @@ public class TramiteLocal {
 		}catch(ErrorSinRegistroDespacho e){
 			
 			String codigoError="E001";
-			depurador.error("Error "+codigoError,e);
+			depurador.error("Error "+codigoError+" "+e.getMessage());
 
 			respuesta.setData(null);
 			respuesta.setEstado(codigoError);
@@ -102,7 +102,7 @@ public class TramiteLocal {
 		}catch(ErrorSinRegistroDespacho e){
 			
 			String codigoError="E001";
-			depurador.error("Error "+codigoError,e);
+			depurador.error("Error "+codigoError+" "+e.getMessage());
 
 			respuesta.setData(null);
 			respuesta.setEstado(codigoError);
@@ -139,7 +139,7 @@ public class TramiteLocal {
 		}catch(ErrorSinRegistroRecepcion e){
 			
 			String codigoError="E001";
-			depurador.error("Error "+codigoError,e);
+			depurador.error("Error "+codigoError+" "+e.getMessage());
 
 			respuesta.setData(null);
 			respuesta.setEstado(codigoError);
@@ -176,7 +176,7 @@ public class TramiteLocal {
 		}catch(ErrorSinRegistroRecepcion e){
 			
 			String codigoError="E001";
-			depurador.error("Error "+codigoError,e);
+			depurador.error("Error "+codigoError+" "+e.getMessage());
 
 			respuesta.setData(null);
 			respuesta.setEstado(codigoError);
