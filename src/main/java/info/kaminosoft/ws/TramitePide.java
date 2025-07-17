@@ -44,6 +44,7 @@ import info.kaminosoft.service.exceptions.ErrorCargoResponse;
 import info.kaminosoft.service.exceptions.ErrorChangeStateDespacho;
 import info.kaminosoft.service.exceptions.ErrorDespachoResponse;
 import info.kaminosoft.service.exceptions.ErrorWSCargoResponse;
+import info.kaminosoft.service.exceptions.ErrorWSConsultaTramiteResponse;
 import info.kaminosoft.service.exceptions.ErrorWSDespachoResponse;
 import info.kaminosoft.util.JwtUtil;
 import info.kaminosoft.util.Utilitarios;
@@ -111,8 +112,49 @@ public class TramitePide {
 
 		return Response.status(Response.Status.OK).entity(respuesta).build();
 	}
+
+	private void wsEstadoEntidadRemota(String vcuo,String vrucentrec) throws Exception{
+		
+		String ruc_entidad = Utilitarios.ObtenerDatosPropertiesUserHome("configuracion", "RUC_ENTIDAD");
+			
+		//Consultamos el Documento en el remoto
+		JIOConsultaTramite jioConsultaTramite = new JIOConsultaTramite();
+		jioConsultaTramite.setVrucentrec(vrucentrec);
+		jioConsultaTramite.setVcuo(vcuo);
+		jioConsultaTramite.setVrucentrem(ruc_entidad);
+
+		try{
+			
+			WSPide.wsConsultarTramiteResponse(jioConsultaTramite);
+		
+		}catch(ErrorWSConsultaTramiteResponse e){
+			//Esta respuesta no esta documentada pero de acuerdo a los logs
+			//vcodres:-1 vdesres:Error en el servicio de la entidad receptora
+			//vcodres:0003 vdesres:Error en el servicio de la entidad receptora
+			//En algunos otros casos se lanza una XMLStreamException cuando el servicio no esta habilitado
+			//vcodres:0001 vdesres:DATOS NO ENCONTRADOS
+			
+
+			// MENSAJES DE RESPUESTA DE LA PIDE (COMPONENTE DE INTEROPERABILIDAD)
+			//
+			// CODIGO_RESPUESTA_CONSULTA = 0000
+			// MENSAJE_CONSULTA_TRAMITE = DATOS ENCONTRADOS
+
+			// CODIGO_RESPUESTA_CONSULTA2 = 0001
+			// MENSAJE_CONSULTA_TRAMITE2 = DATOS NO ENCONTRADOS
+			if(e.getMessage().contains("Error en el servicio de la entidad receptora") ){
+				throw e;
+			}
+			else{
+				//La unica posibilidad es 0001 DATOS NO ENCONTRADOS
+				//XMLStreamException los controla wsDocumentoDespachadoEnRemoto()
+			}
+			
+		}
+		
+	}
 	
-	private boolean wsDocumentoDespachadoEnRemoto(String vcuo,String vnumregstd, String vrucentrec) throws Exception{
+	private boolean wsDocumentoDespachadoEnRemoto(String vcuo,String vrucentrec) throws Exception{
 			
 			String ruc_entidad = Utilitarios.ObtenerDatosPropertiesUserHome("configuracion", "RUC_ENTIDAD");
 			
@@ -121,19 +163,30 @@ public class TramitePide {
 			jioConsultaTramite.setVrucentrec(vrucentrec);
 			jioConsultaTramite.setVcuo(vcuo);
 			jioConsultaTramite.setVrucentrem(ruc_entidad);
-			JIORespuestaConsultaTramite jioRespuestaConsultaTramite = WSPide.wsConsultarTramiteResponse(jioConsultaTramite);
 			
-			if(jioRespuestaConsultaTramite.getVcodres().equals("0000")){
-				//El documnento esta en el remoto, es necesario actualizar el estado
+			try{
+
+				JIORespuestaConsultaTramite jioRespuestaConsultaTramite = WSPide.wsConsultarTramiteResponse(jioConsultaTramite);
 				String cflgestRemoto=jioRespuestaConsultaTramite.getCflgest();
-				//La unica posibilidad es "P" es imposible "R" o "O" debido a que en local no esta sincronizado
-				if(cflgestRemoto.equals("P")){
+				
+				//redundate segun documentacion de la PIDE
+				//cflgestRemoto puede ser P, R, O
+				if(cflgestRemoto.equals("P") || cflgestRemoto.equals("R") || cflgestRemoto.equals("O")){
 					return true;
 				}
+
+			}catch(ErrorWSConsultaTramiteResponse e){
+				if(e.getMessage().contains("Error en el servicio de la entidad receptora") ){
+					throw e;
+				}
+				else{
+					return false;
+					//La unica posibilidad es 0001 DATOS NO ENCONTRADOS
+					//XMLStreamException los controla wsDocumentoDespachadoEnRemoto()
+				}
 			}
-			
+
 			return false;
-			
 	}
 
 	private Response insDespachoEstado(JSDespacho despacho,String vnumregstdref){ 
@@ -203,6 +256,13 @@ public class TramitePide {
 			String respuestaSuccessPide="";
 			JIODespacho resDespacho=getDespachoExternaServiceBean().getDespachoByNumRegStd(jioDespacho.getVnumregstd());
 			if(resDespacho==null) {
+
+				//hack para verificar que el remoto esta habilitado
+				//enviamos un cuo que no existe
+				//si no esta habilitado el remoto lanzara una Exception
+				//se han encotrado muchas estidades que estan que estan deshbilitadas
+				wsEstadoEntidadRemota("999999999A",jioDespacho.getVrucentrec());
+				
 				depurador.info("documento vnumregstd: "+jioDespacho.getVnumregstd()+ " ==> creamos documento(pdf) y enviamos a remoto el documento(pdf)");
 				//transaccion
 				JIODespacho jioDespachoRes=getDespachoExternaServiceBean().insDespacho(jioDespacho,vnumregstdref);
@@ -217,7 +277,7 @@ public class TramitePide {
 				if(resDespacho.getCflgest().equals("P")){
 
 					String vcuo=resDespacho.getVcuo();
-					boolean estado=wsDocumentoDespachadoEnRemoto(vcuo, jioDespacho.getVnumregstd(), jioDespacho.getVrucentrec());
+					boolean estado=wsDocumentoDespachadoEnRemoto(vcuo, jioDespacho.getVrucentrec());
 					if(estado==true) {
 						depurador.info("documento vnumregstd: "+jioDespacho.getVnumregstd()+ " ==> existe documento(pdf) y el remoto tiene el documento(pdf) con estado P entonces sincronizamos estado");
 						respuestaSuccessPide="El Documento (sincronizado) Nº CUO "+vcuo+
@@ -269,6 +329,15 @@ public class TramitePide {
 
 		}catch (ErrorWSDespachoResponse e) {
 			String codigoError="E004";
+			depurador.error("Error "+codigoError,e);
+
+			respuesta.setData(null);
+			respuesta.setEstado(codigoError);
+			respuesta.setError(e.getMessage()==null || e.getMessage().trim().equals("") ? "Error en el servicio de la entidad receptora ":e.getMessage());
+
+		}
+		catch (ErrorWSConsultaTramiteResponse e) {
+			String codigoError="E005";
 			depurador.error("Error "+codigoError,e);
 
 			respuesta.setData(null);
@@ -532,36 +601,37 @@ public class TramitePide {
 				
 				depurador.info("consulta remota cargo vrucentrec="+vrucentrec+" vcuo="+vcuo+" ruc_entidad="+ruc_entidad);
 				
-				if(!jioRespuestaConsultaTramite.getVcodres().equals("0000")){
-	
-		
-					respuesta.setData(null);
-					respuesta.setEstado("E001");
-					respuesta.setError(jioRespuestaConsultaTramite.getVdesres()==null?"Error en el servicio de la entidad receptora ":jioRespuestaConsultaTramite.getVdesres());
-				}
-				else{
-					
-					String estado="0000";
-					/*
-						El cargo del remoto, lo persistimos manualmente cuando se realiza la
-						consulta del estado del documento enviado
-					 */
-					if(despacho.getCflgest().equals("E")) {
-						if(jioRespuestaConsultaTramite.getCflgest().equals("R") || jioRespuestaConsultaTramite.getCflgest().equals("O")){
-							int row=insCargoRecepcionSincronizado(jioRespuestaConsultaTramite,vcuo,vnumregstd);
-							if(row==0) {//No se pudo sincronizar
-								estado="0001";
-							}
+				String estado="0000";
+				/*
+					El cargo del remoto, lo persistimos manualmente cuando se realiza la
+					consulta del estado del documento enviado
+					*/
+				if(despacho.getCflgest().equals("E")) {
+					if(jioRespuestaConsultaTramite.getCflgest().equals("R") || jioRespuestaConsultaTramite.getCflgest().equals("O")){
+						int row=insCargoRecepcionSincronizado(jioRespuestaConsultaTramite,vcuo,vnumregstd);
+						if(row==0) {//No se pudo sincronizar
+							estado="0001";
 						}
 					}
-					
-					respuesta.setData(jioRespuestaConsultaTramite);
-					respuesta.setEstado(estado);
-					respuesta.setError(null);
 				}
+				
+				respuesta.setData(jioRespuestaConsultaTramite);
+				respuesta.setEstado(estado);
+				respuesta.setError(null);
+				
 			}
 
-		}catch(Exception e){
+		}
+		catch (ErrorWSConsultaTramiteResponse e) {
+			String codigoError="E001";
+			depurador.error("Error "+codigoError,e);
+
+			respuesta.setData(null);
+			respuesta.setEstado(codigoError);
+			respuesta.setError(e.getMessage()==null || e.getMessage().trim().equals("") ? "Error en el servicio de la entidad receptora ":e.getMessage());
+
+		}
+		catch(Exception e){
 
 			String codigoError="-1";
 			depurador.error("Error "+codigoError,e);
