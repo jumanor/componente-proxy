@@ -8,6 +8,7 @@ import java.time.ZoneId;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -20,6 +21,7 @@ import info.kaminosoft.bean.JIORecepcion;
 import info.kaminosoft.dao.IRecepcionDao;
 
 import info.kaminosoft.dao.exceptions.ErrorSinRegistroRecepcion;
+import info.kaminosoft.dao.exceptions.ErrorAdquirirBloqueoExclusivo;
 
 @Repository("iRecepcionDao")
 public class RecepcionDao extends JdbcTemplate implements IRecepcionDao{
@@ -192,6 +194,15 @@ public class RecepcionDao extends JdbcTemplate implements IRecepcionDao{
 
 		}catch(EmptyResultDataAccessException ex){
 			throw new ErrorSinRegistroRecepcion("registro no encontrado");
+		}
+	}
+	@Override
+	public String lockRecepcionForUpdate(String vnumregstd) throws Exception{
+		try{
+			String sql = "SELECT cflgest FROM esq_iotramite.IOTDTC_RECEPCION WHERE vnumregstd = ? FOR UPDATE NOWAIT";
+			return queryForObject(sql, String.class, vnumregstd);
+		}catch(CannotAcquireLockException e){
+			throw new ErrorAdquirirBloqueoExclusivo("El registro está siendo modificado por otro proceso");
 		}
 	}
 }

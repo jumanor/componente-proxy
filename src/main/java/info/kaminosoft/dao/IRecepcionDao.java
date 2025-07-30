@@ -10,4 +10,5 @@ public interface IRecepcionDao {
     public JIORecepcion getRecepcionWithPDFByNumRegStd(String vnumregstd)throws Exception;
     public int updEstadoRecepcionByNumRegStd(String vnumregstd,String cflgest) throws Exception;
     JICargoRecepcion getCargoByNumRegStd(String vnumregstd) throws Exception;
+    public String lockRecepcionForUpdate(String vnumregstd) throws Exception;
 }
