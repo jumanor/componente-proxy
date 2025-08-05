@@ -1,12 +1,22 @@
-# ⚠️ **Aún estamos en desarrollo** ⚠️
 ![Java 8](https://img.shields.io/badge/Java-8-blue.svg?logo=openjdk&longCache=true&style=flat)
 # Componente Proxy (PIDE)
 Este proyecto surge por la necesidad de facilitar la Interoperabilidad entre los **Sistemas de Gestión Documental** de  las Entidades Públicas del Perú.
 
 **Componente Proxy** agrega una capa de abstracción la cual *simplifica significativamente* el envio de documentos firmados digitalmente por medio de la Plataforma de Interoperabilidad del Estado (PIDE).
+# Release Notes
+- **v2.0.0**
+    - Sincronización de Documentos con Remoto
+    - No se verifica la recepción del ***cargo de recepción*** en la Entidad Remota (ver https://youtu.be/JVE9fJWGQR8)
+    - Agregamos *URL_WEBHOOK_STD_PATH_EVENT_CARGO* en  ***configuracion.properties***
+    - El estado *SUBSANADO* esta deprecated (actualmente ninguna Entidad lo utiliza)
+    - Otros
+
+- **v1.1.0**
+    - Version inicial
 # Características 
 - Api Rest, puede integrarse en cualquier proyecto web (Php, Python, Java, etc)
 - Json Web Tokens (JWT)
+- En modo ***DEV_LOCALHOST*** no es necesario acceso a la PIDE para realizar pruebas.
 
 # Documentos de la Implementación
 - Especificaciones Técnicas en Interoperabilidad para el Modelo de Gestión Documental (2024) https://acortar.link/qfoi6I
@@ -19,7 +29,7 @@ Este proyecto surge por la necesidad de facilitar la Interoperabilidad entre los
 # Instalación
 **Componente Proxy** tiene que instalarse junto con el **Componente de Interoperabilidad** (ver el Módelo de Implementación) en un Servidor de Aplicaciones.
 
-Se ha creado un [repositorio](https://github.com/jumanor/interoperabilidad-std) con todo lo necesario para la instalación y un [video](https://www.youtube.com/watch?v=9JT6A5emf3M) como guía.
+Se ha creado [https://github.com/jumanor/interoperabilidad-std](https://github.com/jumanor/interoperabilidad-std) con todo lo necesario para la instalación y un [video](https://www.youtube.com/watch?v=9JT6A5emf3M) como guía.
 
 No es necesario que tenga acceso a la PIDE para probar el envio/recepccion de documentos mayor detalle en el [video](https://youtu.be/77H_o4VT4QI?feature=shared&t=132)
 
