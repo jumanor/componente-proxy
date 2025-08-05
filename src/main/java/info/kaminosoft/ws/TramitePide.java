@@ -36,12 +36,16 @@ import info.kaminosoft.bean.JSDocumentoAnexo;
 import info.kaminosoft.bean.JSRespuesta;
 import info.kaminosoft.bean.Modo;
 import info.kaminosoft.dao.exceptions.ErrorDuplicadoCuoDespacho;
+import info.kaminosoft.dao.exceptions.ErrorDuplicadoCuoRefDespacho;
 import info.kaminosoft.dao.exceptions.ErrorDuplicadoNumRegStdDespacho;
 import info.kaminosoft.service.IDespachoExternaService;
 import info.kaminosoft.service.IRecepcionExternaService;
 import info.kaminosoft.service.exceptions.ErrorCargoResponse;
 import info.kaminosoft.service.exceptions.ErrorChangeStateDespacho;
 import info.kaminosoft.service.exceptions.ErrorDespachoResponse;
+import info.kaminosoft.service.exceptions.ErrorWSCargoResponse;
+import info.kaminosoft.service.exceptions.ErrorWSConsultaTramiteResponse;
+import info.kaminosoft.service.exceptions.ErrorWSDespachoResponse;
 import info.kaminosoft.util.JwtUtil;
 import info.kaminosoft.util.Utilitarios;
 import info.kaminosoft.util.WSPide;
@@ -109,7 +113,83 @@ public class TramitePide {
 		return Response.status(Response.Status.OK).entity(respuesta).build();
 	}
 
-	private Response insDespachoEstado(JSDespacho despacho,String cflgest,String vnumregstdref){ 
+	private void wsEstadoEntidadRemota(String vcuo,String vrucentrec) throws Exception{
+		
+		String ruc_entidad = Utilitarios.ObtenerDatosPropertiesUserHome("configuracion", "RUC_ENTIDAD");
+			
+		//Consultamos el Documento en el remoto
+		JIOConsultaTramite jioConsultaTramite = new JIOConsultaTramite();
+		jioConsultaTramite.setVrucentrec(vrucentrec);
+		jioConsultaTramite.setVcuo(vcuo);
+		jioConsultaTramite.setVrucentrem(ruc_entidad);
+
+		try{
+			
+			WSPide.wsConsultarTramiteResponse(jioConsultaTramite);
+		
+		}catch(ErrorWSConsultaTramiteResponse e){
+			//Esta respuesta no esta documentada pero de acuerdo a los logs
+			//vcodres:-1 vdesres:Error en el servicio de la entidad receptora
+			//vcodres:0003 vdesres:Error en el servicio de la entidad receptora
+			//En algunos otros casos se lanza una XMLStreamException cuando el servicio no esta habilitado
+			//vcodres:0001 vdesres:DATOS NO ENCONTRADOS
+			
+
+			// MENSAJES DE RESPUESTA DE LA PIDE (COMPONENTE DE INTEROPERABILIDAD)
+			//
+			// CODIGO_RESPUESTA_CONSULTA = 0000
+			// MENSAJE_CONSULTA_TRAMITE = DATOS ENCONTRADOS
+
+			// CODIGO_RESPUESTA_CONSULTA2 = 0001
+			// MENSAJE_CONSULTA_TRAMITE2 = DATOS NO ENCONTRADOS
+			if(e.getMessage().contains("Error en el servicio de la entidad receptora") ){
+				throw e;
+			}
+			else{
+				//La unica posibilidad es 0001 DATOS NO ENCONTRADOS
+				//XMLStreamException los controla wsDocumentoDespachadoEnRemoto()
+			}
+			
+		}
+		
+	}
+	
+	private boolean wsDocumentoDespachadoEnRemoto(String vcuo,String vrucentrec) throws Exception{
+			
+			String ruc_entidad = Utilitarios.ObtenerDatosPropertiesUserHome("configuracion", "RUC_ENTIDAD");
+			
+			//Consultamos el Documento en el remoto
+			JIOConsultaTramite jioConsultaTramite = new JIOConsultaTramite();
+			jioConsultaTramite.setVrucentrec(vrucentrec);
+			jioConsultaTramite.setVcuo(vcuo);
+			jioConsultaTramite.setVrucentrem(ruc_entidad);
+			
+			try{
+
+				JIORespuestaConsultaTramite jioRespuestaConsultaTramite = WSPide.wsConsultarTramiteResponse(jioConsultaTramite);
+				String cflgestRemoto=jioRespuestaConsultaTramite.getCflgest();
+				
+				//redundate segun documentacion de la PIDE
+				//cflgestRemoto puede ser P, R, O
+				if(cflgestRemoto.equals("P") || cflgestRemoto.equals("R") || cflgestRemoto.equals("O")){
+					return true;
+				}
+
+			}catch(ErrorWSConsultaTramiteResponse e){
+				if(e.getMessage().contains("Error en el servicio de la entidad receptora") ){
+					throw e;
+				}
+				else{
+					return false;
+					//La unica posibilidad es 0001 DATOS NO ENCONTRADOS
+					//XMLStreamException los controla wsDocumentoDespachadoEnRemoto()
+				}
+			}
+
+			return false;
+	}
+
+	private Response insDespachoEstado(JSDespacho despacho,String vnumregstdref){ 
 		
 		JSRespuesta respuesta = new JSRespuesta();
 		try{
@@ -128,7 +208,7 @@ public class TramitePide {
 			jioDespacho.setVusureg(despacho.getVusureg());
 			jioDespacho.setVcuo(WSPide.wsGetCuo());
 			//jioDespacho.setVcuoref(vcuoref);
-			jioDespacho.setCflgest("E");//siempre E: Enviado			
+			jioDespacho.setCflgest("P");//siempre P: Pendiente			
 			
 
 			JIODocumentoExterno documentoExterno = new JIODocumentoExterno();
@@ -171,49 +251,137 @@ public class TramitePide {
 			if(lsDocumentoAnexo.size()>0){
 				documentoExterno.setVurldocanx(despacho.getVurldocanx());
 			}
+			
+			String codigoSuccess="0000";
+			String respuestaSuccessPide="";
+			JIODespacho resDespacho=getDespachoExternaServiceBean().getDespachoByNumRegStd(jioDespacho.getVnumregstd());
+			if(resDespacho==null) {
 
-			String respuestaSuccessPide=getDespachoExternaServiceBean().insDespacho(jioDespacho,cflgest,vnumregstdref);
+				//hack para verificar que el remoto esta habilitado
+				//enviamos un cuo que no existe
+				//si no esta habilitado el remoto lanzara una Exception
+				//se han encotrado muchas estidades que estan que estan deshbilitadas
+				wsEstadoEntidadRemota("999999999A",jioDespacho.getVrucentrec());
+				
+				depurador.info("documento vnumregstd: "+jioDespacho.getVnumregstd()+ " ==> creamos documento(pdf) y enviamos a remoto el documento(pdf)");
+				//transaccion
+				JIODespacho jioDespachoRes=getDespachoExternaServiceBean().insDespacho(jioDespacho,vnumregstdref);
+				//remoto
+				respuestaSuccessPide=WSPide.wsRecepcionarTramiteResponse(jioDespachoRes);
+				//transaccion
+				getDespachoExternaServiceBean().updEstadoDespacho(jioDespachoRes.getVnumregstd(), "E",vnumregstdref);
+			}
+			else { 
 
-			respuesta.setEstado("0000");
+				//El documento se encuentra el local con estado pendiente
+				if(resDespacho.getCflgest().equals("P")){
+
+					String vcuo=resDespacho.getVcuo();
+					boolean estado=wsDocumentoDespachadoEnRemoto(vcuo, jioDespacho.getVrucentrec());
+					if(estado==true) {
+						depurador.info("documento vnumregstd: "+jioDespacho.getVnumregstd()+ " ==> existe documento(pdf) y el remoto tiene el documento(pdf) con estado P entonces sincronizamos estado");
+						respuestaSuccessPide="El Documento (sincronizado) Nº CUO "+vcuo+
+						" se encuentra a disposición para la recepción formal de la entidad destinataria "+
+						jioDespacho.getVnomentrec()+
+						" en los horarios de atención de su Mesa de Partes.";
+						
+						codigoSuccess="0001";//Codigo 0001: sincronizamos el documento con estado Pendiente
+											//Importante: El documental recibido se descarta !!!
+						
+						
+						//transaccion
+						getDespachoExternaServiceBean().updEstadoDespacho(jioDespacho.getVnumregstd(), "E",vnumregstdref);
+					}
+					else {
+						depurador.info("documento vnumregstd: "+jioDespacho.getVnumregstd()+ " ==> eliminamos documento(pdf) y creamos documento(pdf) entonce enviamos documento(pdf) a remoto");
+						//removemos el documento con estado pendiente
+						getDespachoExternaServiceBean().removeDespacho(jioDespacho.getVnumregstd());
+						//transaccion
+						JIODespacho jioDespachoRes=getDespachoExternaServiceBean().insDespacho(jioDespacho,vnumregstdref);
+						//remoto
+						respuestaSuccessPide=WSPide.wsRecepcionarTramiteResponse(jioDespachoRes);
+						//transaccion
+						getDespachoExternaServiceBean().updEstadoDespacho(jioDespachoRes.getVnumregstd(), "E",vnumregstdref);
+					}
+
+				}
+				else{
+					String vnomentrec=resDespacho.getVnomentrec();
+					String vnumregstd=resDespacho.getVnumregstd();
+					throw new ErrorDespachoResponse("El documento "+vnumregstd+" ya es envio a la entidad destinataria "+vnomentrec);
+				}
+				
+			}
+			
+			
+			respuesta.setEstado(codigoSuccess);
 			respuesta.setData(respuestaSuccessPide);
 			respuesta.setError(null);
 
 		}catch(ErrorChangeStateDespacho e){
 
-			String codigoError="0001";
+			String codigoError="E003";
 			depurador.error("Error "+codigoError,e);
 
 			respuesta.setData(null);
 			respuesta.setEstado(codigoError);
-			respuesta.setError(e.getMessage());
+			respuesta.setError(e.getMessage()==null?"Ocurrio un error inesperado":e.getMessage());
 
-		}catch(ErrorDespachoResponse e){
-
-			String codigoError="0001";
+		}catch (ErrorWSDespachoResponse e) {
+			String codigoError="E004";
 			depurador.error("Error "+codigoError,e);
 
 			respuesta.setData(null);
 			respuesta.setEstado(codigoError);
-			respuesta.setError(e.getMessage());
+			respuesta.setError(e.getMessage()==null || e.getMessage().trim().equals("") ? "Error en el servicio de la entidad receptora ":e.getMessage());
+
+		}
+		catch (ErrorWSConsultaTramiteResponse e) {
+			String codigoError="E005";
+			depurador.error("Error "+codigoError,e);
+
+			respuesta.setData(null);
+			respuesta.setEstado(codigoError);
+			respuesta.setError(e.getMessage()==null || e.getMessage().trim().equals("") ? "Error en el servicio de la entidad receptora ":e.getMessage());
+
+		}
+		catch(ErrorDespachoResponse e){
+
+			String codigoError="E002";
+			depurador.error("Error "+codigoError,e);
+
+			respuesta.setData(null);
+			respuesta.setEstado(codigoError);
+			respuesta.setError(e.getMessage()==null?"Ocurrio un error inesperado":e.getMessage());
 		}
 		catch(ErrorDuplicadoCuoDespacho e){
 
-			String codigoError="0001";
+			String codigoError="E001";
 			depurador.error("Error "+codigoError,e);
 
 			respuesta.setData(null);
 			respuesta.setEstado(codigoError);
-			respuesta.setError(e.getMessage());
+			respuesta.setError(e.getMessage()==null?"Ocurrio un error inesperado":e.getMessage());
+
+		}
+		catch(ErrorDuplicadoCuoRefDespacho e){
+
+			String codigoError="E001";
+			depurador.error("Error "+codigoError,e);
+
+			respuesta.setData(null);
+			respuesta.setEstado(codigoError);
+			respuesta.setError(e.getMessage()==null?"Ocurrio un error inesperado":e.getMessage());
 
 		}
 		catch(ErrorDuplicadoNumRegStdDespacho e){
 
-			String codigoError="0001";
+			String codigoError="E001";
 			depurador.error("Error "+codigoError,e);
 
 			respuesta.setData(null);
 			respuesta.setEstado(codigoError);
-			respuesta.setError(e.getMessage());
+			respuesta.setError(e.getMessage()==null?"Ocurrio un error inesperado":e.getMessage());
 
 		}
 		catch(Exception e){
@@ -234,7 +402,7 @@ public class TramitePide {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
     public Response insDespachoEnviado(JSDespacho despacho) {
-		return insDespachoEstado(despacho,"E",null);
+		return insDespachoEstado(despacho,null);
     }
 	@POST
 	@RolesAllowed({"restringido"})
@@ -243,9 +411,28 @@ public class TramitePide {
 	@Consumes(MediaType.APPLICATION_JSON)
     public Response insDespachoSubsando(JSDespacho despacho) {
 		// con vcuoref actualimos el estado del despacho anterior
-		return insDespachoEstado(despacho,"S",despacho.getVnumregstdref());
+		return insDespachoEstado(despacho,despacho.getVnumregstdref());
     }
-
+	
+	private String wsCargoEnRemoto(JIORecepcion recepcion,String vcuo,String vrucentrem){
+		
+		try {
+			
+			String respuestaSuccessPide=WSPide.wsCargoResponse(recepcion,vcuo,vrucentrem);
+			
+			return respuestaSuccessPide;
+		}
+		catch(ErrorWSCargoResponse e){
+			return "RECEPCION DE CARGO EXITOSO (*)";
+		}
+		catch(ErrorCargoResponse e){
+			return "RECEPCION DE CARGO EXITOSO (**)";
+		}
+		catch(Exception e){
+			return "RECEPCION DE CARGO EXITOSO (***)";
+		}
+	}
+	
 	private Response insCargoEstado(JSCargo cargo,String cflgest,String vobs){
 
 		depurador.info("insertar cargo de recepcion: "+cargo.getVnumregstd());	
@@ -255,36 +442,72 @@ public class TramitePide {
 
 			String anioActual = String.valueOf(LocalDate.now().getYear());
 
-			JIORecepcion rec = new JIORecepcion();
-			rec.setVnumregstd(cargo.getVnumregstd());//unico en la tabla
-			rec.setVanioregstd(anioActual);
-			rec.setVuniorgstd(cargo.getVuniorgstd());
-			rec.setCcoduniorgstd(cargo.getCcoduniorgstd());
-			rec.setVusuregstd(cargo.getVusuregstd());
+			JIORecepcion newRecepcion = new JIORecepcion();
+			newRecepcion.setVnumregstd(cargo.getVnumregstd());//unico en la tabla
+			newRecepcion.setVanioregstd(anioActual);
+			newRecepcion.setVuniorgstd(cargo.getVuniorgstd());
+			newRecepcion.setCcoduniorgstd(cargo.getCcoduniorgstd());
+			newRecepcion.setVusuregstd(cargo.getVusuregstd());
 
 			//Jackson convierte el String a byte[] decodificado
-			rec.setBcarstd(cargo.getBcarstd());
-			rec.setVobs(vobs);
-			rec.setCflgest(cflgest);
-
+			newRecepcion.setBcarstd(cargo.getBcarstd());
+			newRecepcion.setVobs(vobs);
+			newRecepcion.setCflgest(cflgest);//R/O
+			
 			ZonedDateTime fechaActual = ZonedDateTime.now();
-			rec.setDfecregstd(fechaActual);
+			newRecepcion.setDfecregstd(fechaActual);
+			
+			
+			String codigoSuccess="0000";
+			String respuestaSuccessPide="";
+			JIORecepcion oldRecepcion=getRecepcionServiceBean().getDespachoByNumRegStd(newRecepcion.getVnumregstd());
+			if(oldRecepcion==null) {
+				
+				throw new ErrorCargoResponse("El documento "+newRecepcion.getVnumregstd()+" no se encuentra registrado ");
+			}
+			else {
+				
+				if(oldRecepcion.getCflgest().equals("P")) {
+					
+					getRecepcionServiceBean().insCargo(newRecepcion);//RECEPCIONADO / OBSERVADO
+					String vcuo = oldRecepcion.getVcuo();
+					String vrucentrem = oldRecepcion.getVrucentrem();
+					
+					/*
+						Debido a que algunas Entidades no estan enviando los mensajes estandar de la PIDE 
+						Ahora las entidades receptoras se encargaran de la sincronizacion
+						Ver video https://youtu.be/JVE9fJWGQR8 para mayores detalles de la implementacion
+					
+						Ahora enviamos el cargo al remoto, no verificamos si el cargo llega al remoto
+					*/
+					respuestaSuccessPide=wsCargoEnRemoto(newRecepcion,vcuo,vrucentrem);
+					depurador.info("cargo de vcuo:"+vcuo+" vnumregstd: "+oldRecepcion.getVnumregstd()+ " respuestaEnviada:"+respuestaSuccessPide+" ==> creamos cargo(pdf) y enviamos a remoto el cargo(pdf)");
+					
+				}
+				else { //R - O
+					
+					String vnumregstd=oldRecepcion.getVnumregstd();
+					throw new ErrorCargoResponse("El cargo de recepción del documento "+vnumregstd+" ya se envio a la entidad receptora");
+				}
+			}
 		
-			String respuestaSuccessPide=getRecepcionServiceBean().insCargo(rec);
 
 			respuesta.setData(respuestaSuccessPide);
-			respuesta.setEstado("0000");
+			respuesta.setEstado(codigoSuccess);
 			respuesta.setError(null);
 
-		} catch (ErrorCargoResponse e) {
-			String codigoError="0001";
+		
+		} 
+		catch (ErrorCargoResponse e) {
+			String codigoError="E001";
 			depurador.error("Error "+codigoError,e);
 
 			respuesta.setData(null);
 			respuesta.setEstado(codigoError);
-			respuesta.setError(e.getMessage());
+			respuesta.setError(e.getMessage()==null?"Ocurrio un error inesperado":e.getMessage());
 
-		} catch (Exception e) {
+		} 
+		catch (Exception e) {
 			String codigoError="-1";
 			depurador.error("Error "+codigoError,e);
 
@@ -303,6 +526,15 @@ public class TramitePide {
     @Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
     public Response insCargoRecepcionado(JSCargo cargo) {
+
+		JSRespuesta respuesta = new JSRespuesta();
+		if(cargo.getVobs()!=null){
+			respuesta.setData(null);
+			respuesta.setEstado("EV01");
+			respuesta.setError("El campo vobs no debe ser enviado");
+			return Response.status(Response.Status.OK).entity(respuesta).build();
+		}
+
 		return insCargoEstado(cargo,"R",null);
 	}
 
@@ -312,9 +544,32 @@ public class TramitePide {
     @Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
     public Response insCargoObservado(JSCargo cargo) {
+
+		JSRespuesta respuesta = new JSRespuesta();
+		if(cargo.getVobs()==null || cargo.getVobs().trim().isEmpty()){
+			respuesta.setData(null);
+			respuesta.setEstado("EV01");
+			respuesta.setError("El campo vobs no debe ser vacio");
+			return Response.status(Response.Status.OK).entity(respuesta).build();
+		}
+
 		return insCargoEstado(cargo,"O",cargo.getVobs());
 	}
-
+	
+	private int insCargoRecepcionSincronizado(JIORespuestaConsultaTramite cargo,String vcuo,String vnumregstd) {
+		
+		int row=0;
+		try {
+			
+			row=getDespachoExternaServiceBean().insCargoRecepcion(cargo,vcuo,vnumregstd);
+			
+		} catch (Exception e) {
+			
+			depurador.error("cargo no sincronizado ==> message="+e.getMessage(),e);
+		}
+		return row;
+	}
+	
 	@GET
     @RolesAllowed({"restringido"})
     @Path("/consultar/recepcion/{vrucentrec}/{vnumregstd}/{token}")
@@ -327,30 +582,56 @@ public class TramitePide {
 
 			String ruc_entidad = Utilitarios.ObtenerDatosPropertiesUserHome("configuracion", "RUC_ENTIDAD");
 			
-			String vcuo=getDespachoExternaServiceBean().getCuoByNumRegStd(vnumregstd);
-
-			JIOConsultaTramite jioConsultaTramite = new JIOConsultaTramite();
-			jioConsultaTramite.setVrucentrec(vrucentrec);
-			jioConsultaTramite.setVcuo(vcuo);
-			jioConsultaTramite.setVrucentrem(ruc_entidad);
-			JIORespuestaConsultaTramite jioRespuestaConsultaTramite = WSPide.wsConsultarTramiteResponse(jioConsultaTramite);
-			
-			
-			if(!jioRespuestaConsultaTramite.getVcodres().equals("0000")){
-
-	
+			JIODespacho despacho=getDespachoExternaServiceBean().getDespachoByNumRegStd(vnumregstd);
+			if(despacho==null) {
+				
 				respuesta.setData(null);
-				respuesta.setEstado("0001");
-				respuesta.setError(jioRespuestaConsultaTramite.getVdesres());
+				respuesta.setEstado("E001");
+				respuesta.setError("Documento no encontrado");
+				
 			}
-			else{
+			else {
+				
+				String vcuo=despacho.getVcuo();
+				JIOConsultaTramite jioConsultaTramite = new JIOConsultaTramite();
+				jioConsultaTramite.setVrucentrec(vrucentrec);
+				jioConsultaTramite.setVcuo(vcuo);
+				jioConsultaTramite.setVrucentrem(ruc_entidad);
+				JIORespuestaConsultaTramite jioRespuestaConsultaTramite = WSPide.wsConsultarTramiteResponse(jioConsultaTramite);
+				
+				depurador.info("consulta remota cargo vrucentrec="+vrucentrec+" vcuo="+vcuo+" ruc_entidad="+ruc_entidad);
+				
+				String estado="0000";
+				/*
+					El cargo del remoto, lo persistimos manualmente cuando se realiza la
+					consulta del estado del documento enviado
+					*/
+				if(despacho.getCflgest().equals("E")) {
+					if(jioRespuestaConsultaTramite.getCflgest().equals("R") || jioRespuestaConsultaTramite.getCflgest().equals("O")){
+						int row=insCargoRecepcionSincronizado(jioRespuestaConsultaTramite,vcuo,vnumregstd);
+						if(row==0) {//No se pudo sincronizar
+							estado="0001";
+						}
+					}
+				}
 				
 				respuesta.setData(jioRespuestaConsultaTramite);
-				respuesta.setEstado("0000");
+				respuesta.setEstado(estado);
 				respuesta.setError(null);
+				
 			}
 
-		}catch(Exception e){
+		}
+		catch (ErrorWSConsultaTramiteResponse e) {
+			String codigoError="E001";
+			depurador.error("Error "+codigoError,e);
+
+			respuesta.setData(null);
+			respuesta.setEstado(codigoError);
+			respuesta.setError(e.getMessage()==null || e.getMessage().trim().equals("") ? "Error en el servicio de la entidad receptora ":e.getMessage());
+
+		}
+		catch(Exception e){
 
 			String codigoError="-1";
 			depurador.error("Error "+codigoError,e);

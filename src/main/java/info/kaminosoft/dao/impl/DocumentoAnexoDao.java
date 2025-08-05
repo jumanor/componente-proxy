@@ -1,12 +1,16 @@
 package info.kaminosoft.dao.impl;
 
+import java.util.List;
+
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import info.kaminosoft.bean.JIODocumentoAnexo;
+
 import info.kaminosoft.dao.IDocumentoAnexoDao;
 
 @Repository("iDocumentoAnexo")
@@ -18,7 +22,7 @@ public class DocumentoAnexoDao extends JdbcTemplate implements IDocumentoAnexoDa
 
     @Override
     public int insDocumentoAnexo(JIODocumentoAnexo documentoAnexo) throws Exception {
-        // TODO Auto-generated method stub
+        
         StringBuilder sql = new StringBuilder();
 		sql.append(" INSERT INTO esq_iotramite.IOTDTD_ANEXO(").
 		append(" siddocanx, siddocext, vnomdoc)").
@@ -34,5 +38,28 @@ public class DocumentoAnexoDao extends JdbcTemplate implements IDocumentoAnexoDa
 		);
 		
 		return id_column;
+    }
+
+	@Override
+	public int removeDocumentoAnexoByIddocext(long siddocext) throws Exception {
+		StringBuilder sql = new StringBuilder();
+		sql.append("DELETE FROM esq_iotramite.IOTDTD_ANEXO ")
+		.append("WHERE siddocext = ?");
+
+		return update(sql.toString(), siddocext);
+	}
+	
+	@Override
+	public List<JIODocumentoAnexo> getDocumentosAnexosByIddocext(long siddocext) throws Exception {
+        
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT vnomdoc ")
+		.append("FROM esq_iotramite.IOTDTD_ANEXO ")
+        .append("WHERE siddocext = ?");
+		
+		return query(sql.toString(), 
+                new BeanPropertyRowMapper<>(JIODocumentoAnexo.class),
+                siddocext);
+		
     }
 }

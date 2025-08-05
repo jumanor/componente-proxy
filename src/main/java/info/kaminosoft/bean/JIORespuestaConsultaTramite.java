@@ -7,8 +7,6 @@ public class JIORespuestaConsultaTramite {
     
     private String vcodres;
     private String vdesres;
-    private String vcuo;
-    private String vcuoref;
     private String vnumregstd;
     private String vanioregstd;
     private String vuniorgstd;
@@ -32,22 +30,6 @@ public class JIORespuestaConsultaTramite {
 
     public void setVdesres(String vdesres) {
         this.vdesres = vdesres;
-    }
-
-    public String getVcuo() {
-        return vcuo;
-    }
-
-    public void setVcuo(String vcuo) {
-        this.vcuo = vcuo;
-    }
-
-    public String getVcuoref() {
-        return vcuoref;
-    }
-
-    public void setVcuoref(String vcuoref) {
-        this.vcuoref = vcuoref;
     }
 
     public String getVnumregstd() {

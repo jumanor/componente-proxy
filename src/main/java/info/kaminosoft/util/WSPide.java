@@ -21,7 +21,9 @@ import info.kaminosoft.bean.JIORespuestaConsultaTramite;
 import info.kaminosoft.bean.JIOTipoDocumentoTramite;
 import info.kaminosoft.bean.Modo;
 import info.kaminosoft.service.exceptions.ErrorCargoResponse;
-import info.kaminosoft.service.exceptions.ErrorDespachoResponse;
+import info.kaminosoft.service.exceptions.ErrorWSDespachoResponse;
+import info.kaminosoft.service.exceptions.ErrorWSCargoResponse;
+import info.kaminosoft.service.exceptions.ErrorWSConsultaTramiteResponse;
 
 
 public class WSPide {
@@ -32,7 +34,7 @@ public class WSPide {
         Utilitarios.ObtenerDatosPropertiesUserHome("configuracion", "MODO")
     );
 
-	public static JIORespuestaConsultaTramite wsConsultarTramiteResponse(JIOConsultaTramite consultaTramite){
+	public static JIORespuestaConsultaTramite wsConsultarTramiteResponse(JIOConsultaTramite consultaTramite) throws Exception{
 		if(modo==Modo.PROD){
 			return wsConsultarTramiteResponseProd(consultaTramite);
 		}
@@ -46,106 +48,143 @@ public class WSPide {
 			throw new UnsupportedOperationException("No se ha implementado el servicio");
 		}
 	}
-	private static JIORespuestaConsultaTramite wsConsultarTramiteResponseProd(JIOConsultaTramite consultaTramite){
+	private static JIORespuestaConsultaTramite wsConsultarTramiteResponseProd(JIOConsultaTramite consultaTramite) throws Exception{
 		prod2.pe.gob.segdi.wsiopidetramite.ws.PcmIMgdTramite srv=new prod2.pe.gob.segdi.wsiopidetramite.ws.PcmIMgdTramite();
 		prod2.pe.gob.segdi.wsiopidetramite.ws.ConsultaTramite consulta=new prod2.pe.gob.segdi.wsiopidetramite.ws.ConsultaTramite();
 		consulta.setVrucentrem(consultaTramite.getVrucentrem());
 		consulta.setVrucentrec(consultaTramite.getVrucentrec());
 		consulta.setVcuo(consultaTramite.getVcuo());
-		prod2.pe.gob.segdi.wsiopidetramite.ws.RespuestaConsultaTramite respuesta=srv.getPcmIMgdTramiteHttpsSoap11Endpoint().consultarTramiteResponse(consulta);
-		depurador.info("Respuesta: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
 
-		JIORespuestaConsultaTramite jioRespuestaConsultaTramite=new JIORespuestaConsultaTramite();
-		jioRespuestaConsultaTramite.setVcodres(respuesta.getVcodres());
-		jioRespuestaConsultaTramite.setVdesres(respuesta.getVdesres());
+		try{
+			prod2.pe.gob.segdi.wsiopidetramite.ws.RespuestaConsultaTramite respuesta=srv.getPcmIMgdTramiteHttpsSoap11Endpoint().consultarTramiteResponse(consulta);
+			depurador.info("wsConsultarTramiteResponse(vcuo="+consultaTramite.getVcuo()+",vrucentrec="+consultaTramite.getVrucentrec()+") ==> vcodres="+respuesta.getVcodres()+" vdesres="+respuesta.getVdesres());
+			
+			if(!respuesta.getVcodres().equals("0000")){
+				depurador.error("Error en el servicio PIDE de consulta trámite rucentrec="+consultaTramite.getVrucentrec()+" cuo="+consultaTramite.getVcuo()+" codres="+respuesta.getVcodres()+" desres="+respuesta.getVdesres());
+                throw new ErrorWSConsultaTramiteResponse(respuesta.getVcodres(),respuesta.getVdesres());
+            }
+			JIORespuestaConsultaTramite jioRespuestaConsultaTramite=new JIORespuestaConsultaTramite();
+			jioRespuestaConsultaTramite.setVcodres(respuesta.getVcodres());
+			jioRespuestaConsultaTramite.setVdesres(respuesta.getVdesres());
 
-		jioRespuestaConsultaTramite.setVcuo(respuesta.getVcuo());
-		jioRespuestaConsultaTramite.setVcuoref(respuesta.getVcuoref());
-		jioRespuestaConsultaTramite.setVnumregstd(respuesta.getVnumregstd());
-		jioRespuestaConsultaTramite.setVanioregstd(respuesta.getVanioregstd());
-		jioRespuestaConsultaTramite.setVuniorgstd(respuesta.getVuniorgstd());
-		jioRespuestaConsultaTramite.setDfecregstd(respuesta.getDfecregstd());
-		jioRespuestaConsultaTramite.setVusuregstd(respuesta.getVusuregstd());
+			//jioRespuestaConsultaTramite.setVcuo(respuesta.getVcuo());
+			//jioRespuestaConsultaTramite.setVcuoref(respuesta.getVcuoref());
+			jioRespuestaConsultaTramite.setVnumregstd(respuesta.getVnumregstd());
+			jioRespuestaConsultaTramite.setVanioregstd(respuesta.getVanioregstd());
+			jioRespuestaConsultaTramite.setVuniorgstd(respuesta.getVuniorgstd());
+			jioRespuestaConsultaTramite.setDfecregstd(respuesta.getDfecregstd());
+			jioRespuestaConsultaTramite.setVusuregstd(respuesta.getVusuregstd());
 
-		//Jackson convertira en forma automatica de byte[] decodificado a String 
-		//byte[] debe ser el original
-		if(respuesta.getBcarstd()!=null) {
-			byte[] bcarstd=Base64.getDecoder().decode(respuesta.getBcarstd());
-			jioRespuestaConsultaTramite.setBcarstd(bcarstd);
+			//Jackson convertira en forma automatica de byte[] decodificado a String 
+			//byte[] debe ser el original
+			if(respuesta.getBcarstd()!=null) {
+				byte[] bcarstd=Base64.getDecoder().decode(respuesta.getBcarstd());
+				jioRespuestaConsultaTramite.setBcarstd(bcarstd);
+			}
+			jioRespuestaConsultaTramite.setVobs(respuesta.getVobs());
+			jioRespuestaConsultaTramite.setCflgest(respuesta.getCflgest());		
+
+			return jioRespuestaConsultaTramite;
+			
 		}
-		jioRespuestaConsultaTramite.setVobs(respuesta.getVobs());
-		jioRespuestaConsultaTramite.setCflgest(respuesta.getCflgest());		
-
-		return jioRespuestaConsultaTramite;
+		catch (ErrorWSConsultaTramiteResponse e) {
+            throw e;
+        }  
+		catch (Exception e) {
+            depurador.error(e.getMessage(),e);
+            throw new ErrorWSConsultaTramiteResponse("-1", "Error en el servicio de la entidad receptora");
+        }
 	}
 
-	private static JIORespuestaConsultaTramite wsConsultarTramiteResponseDev(JIOConsultaTramite consultaTramite){
+	private static JIORespuestaConsultaTramite wsConsultarTramiteResponseDev(JIOConsultaTramite consultaTramite) throws Exception{
 		dev2.pe.gob.segdi.wsiopidetramite.ws.IOTramiteService srv=new dev2.pe.gob.segdi.wsiopidetramite.ws.IOTramiteService();
 		dev2.pe.gob.segdi.wsiopidetramite.ws.ConsultaTramite consulta=new dev2.pe.gob.segdi.wsiopidetramite.ws.ConsultaTramite();
 		consulta.setVrucentrem(consultaTramite.getVrucentrem());
 		consulta.setVrucentrec(consultaTramite.getVrucentrec());
 		consulta.setVcuo(consultaTramite.getVcuo());
-		dev2.pe.gob.segdi.wsiopidetramite.ws.RespuestaConsultaTramite respuesta;
+
 		try{
-			respuesta=srv.getIOTramitePort().consultarTramiteResponse(consulta);
-		}catch(dev2.pe.gob.segdi.wsiopidetramite.ws.IOException_Exception e){
-			throw new RuntimeException(e.getMessage(),e);
-		}
-		depurador.info("Respuesta: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
+			dev2.pe.gob.segdi.wsiopidetramite.ws.RespuestaConsultaTramite respuesta=srv.getIOTramitePort().consultarTramiteResponse(consulta);
+			depurador.info("wsConsultarTramiteResponse(vcuo="+consultaTramite.getVcuo()+",vrucentrec="+consultaTramite.getVrucentrec()+") ==> vcodres="+respuesta.getVcodres()+" vdesres="+respuesta.getVdesres());
+			
+			if(!respuesta.getVcodres().equals("0000")){
+				depurador.error("Error en el servicio PIDE de consulta trámite rucentrec="+consultaTramite.getVrucentrec()+" cuo="+consultaTramite.getVcuo()+" codres="+respuesta.getVcodres()+" desres="+respuesta.getVdesres());
+                throw new ErrorWSConsultaTramiteResponse(respuesta.getVcodres(),respuesta.getVdesres());
+            }
 
-		JIORespuestaConsultaTramite jioRespuestaConsultaTramite=new JIORespuestaConsultaTramite();
-		jioRespuestaConsultaTramite.setVcodres(respuesta.getVcodres());
-		jioRespuestaConsultaTramite.setVdesres(respuesta.getVdesres());
+			JIORespuestaConsultaTramite jioRespuestaConsultaTramite=new JIORespuestaConsultaTramite();
+			jioRespuestaConsultaTramite.setVcodres(respuesta.getVcodres());
+			jioRespuestaConsultaTramite.setVdesres(respuesta.getVdesres());
+			
+			//jioRespuestaConsultaTramite.setVcuo(respuesta.getVcuo());
+			//jioRespuestaConsultaTramite.setVcuoref(respuesta.getVcuoref());
+			jioRespuestaConsultaTramite.setVnumregstd(respuesta.getVnumregstd());
+			jioRespuestaConsultaTramite.setVanioregstd(respuesta.getVanioregstd());
+			jioRespuestaConsultaTramite.setVuniorgstd(respuesta.getVuniorgstd());
+			jioRespuestaConsultaTramite.setDfecregstd(respuesta.getDfecregstd());
+			jioRespuestaConsultaTramite.setVusuregstd(respuesta.getVusuregstd());
+			//Jackson convertira en forma automatica de byte[] decodificado a String 
+			//byte[] debe ser el original
+			if(respuesta.getBcarstd()!=null) {
+				byte[] bcarstd=Base64.getDecoder().decode(respuesta.getBcarstd());
+				jioRespuestaConsultaTramite.setBcarstd(bcarstd);
+			}
+			jioRespuestaConsultaTramite.setVobs(respuesta.getVobs());
+			jioRespuestaConsultaTramite.setCflgest(respuesta.getCflgest());		
+
+			return jioRespuestaConsultaTramite;
 		
-		jioRespuestaConsultaTramite.setVcuo(respuesta.getVcuo());
-		jioRespuestaConsultaTramite.setVcuoref(respuesta.getVcuoref());
-		jioRespuestaConsultaTramite.setVnumregstd(respuesta.getVnumregstd());
-		jioRespuestaConsultaTramite.setVanioregstd(respuesta.getVanioregstd());
-		jioRespuestaConsultaTramite.setVuniorgstd(respuesta.getVuniorgstd());
-		jioRespuestaConsultaTramite.setDfecregstd(respuesta.getDfecregstd());
-		jioRespuestaConsultaTramite.setVusuregstd(respuesta.getVusuregstd());
-		//Jackson convertira en forma automatica de byte[] decodificado a String 
-		//byte[] debe ser el original
-		if(respuesta.getBcarstd()!=null) {
-			byte[] bcarstd=Base64.getDecoder().decode(respuesta.getBcarstd());
-			jioRespuestaConsultaTramite.setBcarstd(bcarstd);
 		}
-		jioRespuestaConsultaTramite.setVobs(respuesta.getVobs());
-		jioRespuestaConsultaTramite.setCflgest(respuesta.getCflgest());		
-
-		return jioRespuestaConsultaTramite;
+		catch (ErrorWSConsultaTramiteResponse e) {
+            throw e;
+        } 
+		catch (Exception e) {
+            depurador.error(e.getMessage(),e);
+            throw new ErrorWSConsultaTramiteResponse("-1", "Error en el servicio de la entidad receptora");
+        }
 	}
 
-	private static JIORespuestaConsultaTramite wsConsultarTramiteRespondeDevLocal(String vcuo){
+	private static JIORespuestaConsultaTramite wsConsultarTramiteRespondeDevLocal(String vcuo) throws Exception{
 		local2.pe.gob.segdi.wsiotramite.ws.Tramite_Service srv=new local2.pe.gob.segdi.wsiotramite.ws.Tramite_Service();
 		
-		local2.pe.gob.segdi.wsiotramite.ws.RespuestaConsultaTramite respuesta;
-		
-		respuesta=srv.getTramitePort().consultarTramiteResponse(vcuo);
-		
-		depurador.info("Respuesta: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
+		try{
+			local2.pe.gob.segdi.wsiotramite.ws.RespuestaConsultaTramite respuesta=srv.getTramitePort().consultarTramiteResponse(vcuo);
+			depurador.info("wsConsultarTramiteResponse(vcuo="+vcuo+") ==> vcodres="+respuesta.getVcodres()+" vdesres="+respuesta.getVdesres());
+			
+			if(!respuesta.getVcodres().equals("0000")){
+				depurador.error("Error en el servicio PIDE de consulta trámite cuo="+vcuo+" codres="+respuesta.getVcodres()+" desres="+respuesta.getVdesres());
+                throw new ErrorWSConsultaTramiteResponse(respuesta.getVcodres(),respuesta.getVdesres());
+            }
+			JIORespuestaConsultaTramite jioRespuestaConsultaTramite=new JIORespuestaConsultaTramite();
+			jioRespuestaConsultaTramite.setVcodres(respuesta.getVcodres());
+			jioRespuestaConsultaTramite.setVdesres(respuesta.getVdesres());
+			
+			//jioRespuestaConsultaTramite.setVcuo(respuesta.getVcuo());
+			//jioRespuestaConsultaTramite.setVcuoref(respuesta.getVcuoref());
+			jioRespuestaConsultaTramite.setVnumregstd(respuesta.getVnumregstd());
+			jioRespuestaConsultaTramite.setVanioregstd(respuesta.getVanioregstd());
+			jioRespuestaConsultaTramite.setVuniorgstd(respuesta.getVuniorgstd());
+			jioRespuestaConsultaTramite.setDfecregstd(respuesta.getDfecregstd());
+			jioRespuestaConsultaTramite.setVusuregstd(respuesta.getVusuregstd());
+			//Jackson convertira en forma automatica de byte[] decodificado a String 
+			//byte[] debe ser el original
+			if(respuesta.getBcarstd()!=null) {
+				byte[] bcarstd=Base64.getDecoder().decode(respuesta.getBcarstd());
+				jioRespuestaConsultaTramite.setBcarstd(bcarstd);
+			}
+			jioRespuestaConsultaTramite.setVobs(respuesta.getVobs());
+			jioRespuestaConsultaTramite.setCflgest(respuesta.getCflgest());		
 
-		JIORespuestaConsultaTramite jioRespuestaConsultaTramite=new JIORespuestaConsultaTramite();
-		jioRespuestaConsultaTramite.setVcodres(respuesta.getVcodres());
-		jioRespuestaConsultaTramite.setVdesres(respuesta.getVdesres());
+			return jioRespuestaConsultaTramite;
 		
-		jioRespuestaConsultaTramite.setVcuo(respuesta.getVcuo());
-		jioRespuestaConsultaTramite.setVcuoref(respuesta.getVcuoref());
-		jioRespuestaConsultaTramite.setVnumregstd(respuesta.getVnumregstd());
-		jioRespuestaConsultaTramite.setVanioregstd(respuesta.getVanioregstd());
-		jioRespuestaConsultaTramite.setVuniorgstd(respuesta.getVuniorgstd());
-		jioRespuestaConsultaTramite.setDfecregstd(respuesta.getDfecregstd());
-		jioRespuestaConsultaTramite.setVusuregstd(respuesta.getVusuregstd());
-		//Jackson convertira en forma automatica de byte[] decodificado a String 
-		//byte[] debe ser el original
-		if(respuesta.getBcarstd()!=null) {
-			byte[] bcarstd=Base64.getDecoder().decode(respuesta.getBcarstd());
-			jioRespuestaConsultaTramite.setBcarstd(bcarstd);
-		}
-		jioRespuestaConsultaTramite.setVobs(respuesta.getVobs());
-		jioRespuestaConsultaTramite.setCflgest(respuesta.getCflgest());		
-
-		return jioRespuestaConsultaTramite;
+		} 
+		catch (ErrorWSConsultaTramiteResponse e) {
+            throw e;
+        } 
+		catch (Exception e) {
+            depurador.error(e.getMessage(),e);
+            throw new ErrorWSConsultaTramiteResponse("-1", "Error en el servicio de la entidad receptora");
+        }
 	}
 
 	public static List<JIOEntidadBean> wsGetListaEntidad(int categoria){
@@ -313,7 +352,7 @@ public class WSPide {
 		return lst;
 	}
 
-    public static String wsCargoResponse(JIORecepcion recepcion,String vcuo,String vrucentrem) throws ErrorCargoResponse {
+    public static String wsCargoResponse(JIORecepcion recepcion,String vcuo,String vrucentrem) throws Exception {
 		if(modo==Modo.PROD){
 
             return wsCargoResponseProd(recepcion, vcuo, vrucentrem);
@@ -330,7 +369,7 @@ public class WSPide {
 			throw new UnsupportedOperationException("No se ha implementado el servicio");
 		}
 	}
-    private static String wsCargoResponseProd(JIORecepcion recepcion,String vcuo,String vrucentrec) throws ErrorCargoResponse {
+    private static String wsCargoResponseProd(JIORecepcion recepcion,String vcuo,String vrucentrec) throws Exception {
         String ruc_entidad = Utilitarios.ObtenerDatosPropertiesUserHome("configuracion", "RUC_ENTIDAD");
 
         prod2.pe.gob.segdi.wsiopidetramite.ws.PcmIMgdTramite locator=new prod2.pe.gob.segdi.wsiopidetramite.ws.PcmIMgdTramite();
@@ -358,15 +397,16 @@ public class WSPide {
             //cargoRequest.setVdesanxstdrec("null");no se usa
             
             prod2.pe.gob.segdi.wsiopidetramite.ws.RespuestaCargoTramite respuesta=locator.getPcmIMgdTramiteHttpsSoap11Endpoint().cargoResponse(cargoRequest);
-            
+            depurador.info("wsCargoResponse(vcuo="+vcuo+",vrucentrec="+vrucentrec+") ==> vcodres="+respuesta.getVcodres()+" vdesres="+respuesta.getVdesres());
+			
             if(!respuesta.getVcodres().equals("0000")){
-                depurador.error("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
-                throw new ErrorCargoResponse("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
+				depurador.error("Error en el servicio PIDE de cargo de trámite rucentrec="+vrucentrec+" cuo="+vcuo+" codres="+respuesta.getVcodres()+" desres="+respuesta.getVdesres());
+                throw new ErrorWSCargoResponse(respuesta.getVcodres(),respuesta.getVdesres());
             }
-
-			return respuesta.getVdesres();
             
-        } catch (ErrorCargoResponse e){
+            return respuesta.getVdesres();
+            
+        } catch (ErrorWSCargoResponse e){
             throw e;
         } catch (Exception e) {
             depurador.error(e.getMessage(),e);
@@ -374,7 +414,7 @@ public class WSPide {
         }
 
     }
-    private static String wsCargoResponseDev(JIORecepcion recepcion,String vcuo,String vrucentrec) throws ErrorCargoResponse {
+    private static String wsCargoResponseDev(JIORecepcion recepcion,String vcuo,String vrucentrec) throws Exception {
 
         String ruc_entidad = Utilitarios.ObtenerDatosPropertiesUserHome("configuracion", "RUC_ENTIDAD");
     	
@@ -403,15 +443,16 @@ public class WSPide {
             //cargoRequest.setVdesanxstdrec("null");no se usa
             
             dev2.pe.gob.segdi.wsiopidetramite.ws.RespuestaCargoTramite respuesta=locator.getIOTramitePort().cargoResponse(cargoRequest);
-            
+            depurador.info("wsCargoResponse(vcuo="+vcuo+",vrucentrec="+vrucentrec+") ==> vcodres="+respuesta.getVcodres()+" vdesres="+respuesta.getVdesres());
+			
             if(!respuesta.getVcodres().equals("0000")){
                 depurador.error("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
-                throw new ErrorCargoResponse("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
+                throw new ErrorWSCargoResponse(respuesta.getVcodres(),respuesta.getVdesres());
             }
 
 			return respuesta.getVdesres();
             
-        } catch (ErrorCargoResponse e){
+        } catch (ErrorWSCargoResponse e){
             throw e;
         } catch (Exception e) {
             depurador.error(e.getMessage(),e);
@@ -419,13 +460,13 @@ public class WSPide {
         }
     
     }
-    private static String wsCargoResponseDevLocal(JIORecepcion recepcion,String vcuo) throws ErrorCargoResponse {
+    private static String wsCargoResponseDevLocal(JIORecepcion recepcion,String vcuo) throws Exception {
 
         local2.pe.gob.segdi.wsiotramite.ws.Tramite_Service locator=new local2.pe.gob.segdi.wsiotramite.ws.Tramite_Service();
 			try {
 				local2.pe.gob.segdi.wsiotramite.ws.CargoTramite cargoRequest=new local2.pe.gob.segdi.wsiotramite.ws.CargoTramite();
                 
-                byte[] pdfDocEncode = Base64.getEncoder().encode(recepcion.getBcarstd());
+				byte[] pdfDocEncode = Base64.getEncoder().encode(recepcion.getBcarstd());
                 GregorianCalendar dfecregstd = GregorianCalendar.from(recepcion.getDfecregstd());
                 XMLGregorianCalendar dfecregstdxml = DatatypeFactory.newInstance().newXMLGregorianCalendar(dfecregstd);
                 
@@ -442,15 +483,17 @@ public class WSPide {
                 //cargoRequest.setVdesanxstdrec("null");no se usa
 
 				local2.pe.gob.segdi.wsiotramite.ws.RespuestaCargoTramite respuesta=locator.getTramitePort().cargoResponse(cargoRequest);
-                
+				depurador.info("wsCargoResponse(vcuo="+vcuo+") ==> vcodres="+respuesta.getVcodres()+" vdesres="+respuesta.getVdesres());
+				
                 if(!respuesta.getVcodres().equals("0000")){
                     depurador.error("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
-                    throw new ErrorCargoResponse("Error en el servicio PIDE de cargo de trámite: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
+                    throw new ErrorWSCargoResponse(respuesta.getVcodres(),respuesta.getVdesres());
                 }
 
 				return respuesta.getVdesres();
 				
-			} catch (ErrorCargoResponse e){
+			} catch (ErrorWSCargoResponse e){
+				
                 throw e;
             } catch (Exception e) {
 				depurador.error(e.getMessage(),e);
@@ -523,10 +566,11 @@ public class WSPide {
 
 			prod2.pe.gob.segdi.wsiopidetramite.ws.PcmIMgdTramite locator=new prod2.pe.gob.segdi.wsiopidetramite.ws.PcmIMgdTramite();
 			prod2.pe.gob.segdi.wsiopidetramite.ws.RespuestaTramite respuesta=locator.getPcmIMgdTramiteHttpsSoap11Endpoint().recepcionarTramiteResponse(despacho);
+			depurador.info("wsRecepcionarTramiteResponse(vcuo="+jioDespacho.getVcuo()+",vrucentrec="+jioDespacho.getVrucentrec()+") ==> vcodres="+respuesta.getVcodres()+" vdesres="+respuesta.getVdesres());
 			
 			if(!respuesta.getVcodres().equals("0000")){
                     depurador.error("Error no se pudo enviar el Documento de Despacho por la PIDE: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
-                    throw new ErrorDespachoResponse("Error no se pudo enviar el Documento de Despacho por la PIDE: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
+                    throw new ErrorWSDespachoResponse(respuesta.getVdesres());
             }
 
 			return respuesta.getVdesres();
@@ -577,10 +621,11 @@ public class WSPide {
 
 			dev2.pe.gob.segdi.wsiopidetramite.ws.IOTramiteService locator=new dev2.pe.gob.segdi.wsiopidetramite.ws.IOTramiteService();
 			dev2.pe.gob.segdi.wsiopidetramite.ws.RespuestaTramite respuesta=locator.getIOTramitePort().recepcionarTramiteResponse(despacho);
+			depurador.info("wsRecepcionarTramiteResponse(vcuo="+jioDespacho.getVcuo()+",vrucentrec="+jioDespacho.getVrucentrec()+") ==> vcodres="+respuesta.getVcodres()+" vdesres="+respuesta.getVdesres());
 			
 			if(!respuesta.getVcodres().equals("0000")){
                     depurador.error("Error no se pudo enviar el Documento de Despacho por la PIDE: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
-                    throw new ErrorDespachoResponse("Error no se pudo enviar el Documento de Despacho por la PIDE: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
+                    throw new ErrorWSDespachoResponse(respuesta.getVdesres());
             }
 
 			return respuesta.getVdesres();
@@ -632,10 +677,11 @@ public class WSPide {
 			
 			local2.pe.gob.segdi.wsiotramite.ws.Tramite_Service locator=new local2.pe.gob.segdi.wsiotramite.ws.Tramite_Service();
 			local2.pe.gob.segdi.wsiotramite.ws.RespuestaTramite respuesta=locator.getTramitePort().recepcionarTramiteResponse(despacho);
+			depurador.info("wsRecepcionarTramiteResponse(vcuo="+jioDespacho.getVcuo()+",vrucentrec="+jioDespacho.getVrucentrec()+") ==> vcodres="+respuesta.getVcodres()+" vdesres="+respuesta.getVdesres());
 			
 			if(!respuesta.getVcodres().equals("0000")){
                     depurador.error("Error no se pudo enviar el Documento de Despacho por la PIDE: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
-                    throw new ErrorDespachoResponse("Error no se pudo enviar el Documento de Despacho por la PIDE: "+respuesta.getVcodres()+" "+respuesta.getVdesres());
+                    throw new ErrorWSDespachoResponse(respuesta.getVdesres());
             }
 
 			return respuesta.getVdesres();

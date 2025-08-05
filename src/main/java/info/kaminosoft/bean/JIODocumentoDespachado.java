@@ -1,9 +1,14 @@
 package info.kaminosoft.bean;
 
 
+import java.util.Date;
+import java.util.List;
 
-public class JIODespacho {
+
+public class JIODocumentoDespachado {
     
+	private long siddocext;
+	
     private String vnumregstd;
     private String vanioregstd;
     private String vrucentrec;
@@ -18,17 +23,23 @@ public class JIODespacho {
     private String cflgest;
     private long sidemiext;
 
-    private JIODocumentoExterno documentoExterno;
-
-    public JIODocumentoExterno getDocumentoExterno() {
-        return documentoExterno;
-    }
-
-    public void setDocumentoExterno(JIODocumentoExterno documentoExterno) {
-        this.documentoExterno = documentoExterno;
-    }
-
     
+    private String vnomentemi;
+    private String ccodtipdoc;
+    private String vnumdoc;
+	private Date dfecdoc;
+    private String vuniorgdst;
+    private String vnomdst;
+    private String vnomcardst;
+    private String vasu;
+    private int snumanx;
+    private Integer snumfol;
+    private String vurldocanx;
+
+	private String vnomdoc;
+    private byte[] bpdfdoc;
+    
+    private List<JIODocumentoAnexo> lstDocAnexo;
 
     public String getVrucentrec() {
         return vrucentrec;
@@ -142,6 +153,126 @@ public class JIODespacho {
 
 	public void setSidemiext(long sidemiext) {
 		this.sidemiext = sidemiext;
+	}
+
+	public String getVnomentemi() {
+		return vnomentemi;
+	}
+
+	public void setVnomentemi(String vnomentemi) {
+		this.vnomentemi = vnomentemi;
+	}
+
+	public String getCcodtipdoc() {
+		return ccodtipdoc;
+	}
+
+	public void setCcodtipdoc(String ccodtipdoc) {
+		this.ccodtipdoc = ccodtipdoc;
+	}
+
+	public String getVnumdoc() {
+		return vnumdoc;
+	}
+
+	public void setVnumdoc(String vnumdoc) {
+		this.vnumdoc = vnumdoc;
+	}
+
+	public Date getDfecdoc() {
+		return dfecdoc;
+	}
+
+	public void setDfecdoc(Date dfecdoc) {
+		this.dfecdoc = dfecdoc;
+	}
+
+	public String getVuniorgdst() {
+		return vuniorgdst;
+	}
+
+	public void setVuniorgdst(String vuniorgdst) {
+		this.vuniorgdst = vuniorgdst;
+	}
+
+	public String getVnomdst() {
+		return vnomdst;
+	}
+
+	public void setVnomdst(String vnomdst) {
+		this.vnomdst = vnomdst;
+	}
+
+	public String getVnomcardst() {
+		return vnomcardst;
+	}
+
+	public void setVnomcardst(String vnomcardst) {
+		this.vnomcardst = vnomcardst;
+	}
+
+	public String getVasu() {
+		return vasu;
+	}
+
+	public void setVasu(String vasu) {
+		this.vasu = vasu;
+	}
+
+	public int getSnumanx() {
+		return snumanx;
+	}
+
+	public void setSnumanx(int snumanx) {
+		this.snumanx = snumanx;
+	}
+
+	public Integer getSnumfol() {
+		return snumfol;
+	}
+
+	public void setSnumfol(Integer snumfol) {
+		this.snumfol = snumfol;
+	}
+
+	public String getVurldocanx() {
+		return vurldocanx;
+	}
+
+	public void setVurldocanx(String vurldocanx) {
+		this.vurldocanx = vurldocanx;
+	}
+
+	public String getVnomdoc() {
+		return vnomdoc;
+	}
+
+	public void setVnomdoc(String vnomdoc) {
+		this.vnomdoc = vnomdoc;
+	}
+
+	public byte[] getBpdfdoc() {
+		return bpdfdoc;
+	}
+
+	public void setBpdfdoc(byte[] bpdfdoc) {
+		this.bpdfdoc = bpdfdoc;
+	}
+
+	public List<JIODocumentoAnexo> getLstDocAnexo() {
+		return lstDocAnexo;
+	}
+
+	public void setLstDocAnexo(List<JIODocumentoAnexo> lstDocAnexo) {
+		this.lstDocAnexo = lstDocAnexo;
+	}
+
+	public long getSiddocext() {
+		return siddocext;
+	}
+
+	public void setSiddocext(long siddocext) {
+		this.siddocext = siddocext;
 	}
 	
 	//private DocumentoExterno documentoExterno;

@@ -7,8 +7,8 @@ import java.util.List;
 
 public class JIODocumentoExterno {
     
-    //private int siddocext;
-    private int sidemiext;
+    private long siddocext;
+    private long sidemiext;
     //private int sidrecext;
     private String vnomentemi;
     private String ccodtipdoc;
@@ -51,11 +51,11 @@ public class JIODocumentoExterno {
     }
     */
 
-    public int getSidemiext() {
+    public long getSidemiext() {
         return sidemiext;
     }
 
-    public void setSidemiext(int sidemiext) {
+    public void setSidemiext(long sidemiext) {
         this.sidemiext = sidemiext;
     }   
 
@@ -148,5 +148,13 @@ public class JIODocumentoExterno {
     public void setVurldocanx(String vurldocanx) {
         this.vurldocanx = vurldocanx;
     }
+
+	public long getSiddocext() {
+		return siddocext;
+	}
+
+	public void setSiddocext(long siddocext) {
+		this.siddocext = siddocext;
+	}
 	
 }
