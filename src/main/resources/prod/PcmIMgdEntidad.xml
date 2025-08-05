@@ -80,7 +80,7 @@
    </wsdl:binding>
    <wsdl:service name="PcmIMgdEntidad">
       <wsdl:port name="PcmIMgdEntidadHttpsSoap11Endpoint" binding="tns:PcmIMgdEntidadSoap11Binding">
-         <soap:address location="https://ws2.pide.gob.pe/services/PcmIMgdEntidad.PcmIMgdEntidadHttpsSoap11Endpoint"/>
+         <soap:address location="https://ws6.pide.gob.pe/services/PcmIMgdEntidad.PcmIMgdEntidadHttpsSoap11Endpoint"/>
       </wsdl:port>
    </wsdl:service>
 </wsdl:definitions>
