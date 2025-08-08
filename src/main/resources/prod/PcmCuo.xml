@@ -82,7 +82,7 @@
    </wsdl:binding>
    <wsdl:service name="PcmCuo">
       <wsdl:port name="PcmCuoHttpsSoap11Endpoint" binding="tns:PcmCuoSoap11Binding">
-         <soap:address location="https://ws2.pide.gob.pe/services/PcmCuo.PcmCuoHttpsSoap11Endpoint"/>
+         <soap:address location="https://ws6.pide.gob.pe/services/PcmCuo.PcmCuoHttpsSoap11Endpoint"/>
       </wsdl:port>
    </wsdl:service>
 </wsdl:definitions>

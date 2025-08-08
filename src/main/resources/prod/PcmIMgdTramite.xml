@@ -219,7 +219,7 @@
    </wsdl:binding>
    <wsdl:service name="PcmIMgdTramite">
       <wsdl:port name="PcmIMgdTramiteHttpsSoap11Endpoint" binding="tns:PcmIMgdTramiteSoap11Binding">
-         <soap:address location="https://ws2.pide.gob.pe/services/PcmIMgdTramite.PcmIMgdTramiteHttpsSoap11Endpoint"/>
+         <soap:address location="https://ws6.pide.gob.pe/services/PcmIMgdTramite.PcmIMgdTramiteHttpsSoap11Endpoint"/>
       </wsdl:port>
    </wsdl:service>
 </wsdl:definitions>

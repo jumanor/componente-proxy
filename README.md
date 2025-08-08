@@ -4,6 +4,9 @@ Este proyecto surge por la necesidad de facilitar la Interoperabilidad entre los
 
 **Componente Proxy** agrega una capa de abstracción la cual *simplifica significativamente* el envio de documentos firmados digitalmente por medio de la Plataforma de Interoperabilidad del Estado (PIDE).
 # Release Notes
+- **v2.0.1**
+    - Actualizamos ws2.pide.gob.pe a ws6.pide.gob.pe en entorno de producción
+    
 - **v2.0.0**
     - Sincronización de Documentos con Remoto
     - No se verifica la recepción del ***cargo de recepción*** en la Entidad Remota (ver https://youtu.be/JVE9fJWGQR8)
