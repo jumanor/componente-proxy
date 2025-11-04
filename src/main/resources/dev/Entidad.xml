@@ -100,7 +100,7 @@
   </wsdl:binding>
   <wsdl:service name="EntidadService">
     <wsdl:port binding="tns:EntidadServiceSoapBinding" name="EntidadPort">
-      <soap:address location="http://mpv-iotd.gobiernodigital.gob.pe/wsentidad/Entidad"/>
+      <soap:address location="https://ws1.pide.gob.pe/services/PcmIMgdEntidad"/>
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

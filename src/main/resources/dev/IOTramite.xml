@@ -251,7 +251,7 @@
   </wsdl:binding>
   <wsdl:service name="IOTramiteService">
     <wsdl:port binding="tns:IOTramiteServiceSoapBinding" name="IOTramitePort">
-      <soap:address location="http://mpv-iotd.gobiernodigital.gob.pe/wsiopidetramite/IOTramite"/>
+      <soap:address location="https://ws1.pide.gob.pe/services/IOTramiteService"/>
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>
